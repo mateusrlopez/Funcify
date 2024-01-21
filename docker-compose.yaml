@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: funcify
+      POSTGRES_USER: funcify
+      POSTGRES_DB: funcify
+
+  mysql:
+    image: mysql
+    container_name: mysql_container
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_PASSWORD: funcify
+      MYSQL_USER: funcify
+      MYSQL_DATABASE: funcify
+      MYSQL_RANDOM_ROOT_PASSWORD: true

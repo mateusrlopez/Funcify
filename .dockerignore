@@ -1,0 +1,12 @@
+.idea
+.git
+.github
+
+.dockerignore
+.gitignore
+.env*
+
+docker-compose.yaml
+
+Makefile
+README.md
