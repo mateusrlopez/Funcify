@@ -1,14 +1,11 @@
 include .env
 export
 
-run:
-	go run cmd/main.go
+run-server:
+	go run server/cmd/main.go
 
-test:
-	go test -v .../.
-
-tidy:
-	go mod tidy
+test-server:
+	go test -v server/.../.
 
 compose-up-v1:
 	docker-compose up -d

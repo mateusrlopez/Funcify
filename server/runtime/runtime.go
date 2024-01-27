@@ -16,14 +16,12 @@ type Runtime interface {
 }
 
 type runtimeImplementation struct {
-	functionsService         services.Functions
-	newFnChan                chan entities.Function
-	updatedFnChan            chan entities.Function
-	deletedFnChan            chan entities.Function
-	shutdownChan             chan bool
-	fnCancelMap              map[string]context.CancelFunc
-	inputConnectorCancelMap  map[string]context.CancelFunc
-	outputConnectorCancelMap map[string]context.CancelFunc
+	functionsService services.Functions
+	newFnChan        chan entities.Function
+	updatedFnChan    chan entities.Function
+	deletedFnChan    chan entities.Function
+	shutdownChan     chan bool
+	fnCancelMap      map[string]context.CancelFunc
 }
 
 var (
@@ -33,14 +31,12 @@ var (
 
 func NewRuntime(functionsService services.Functions, newFnChan, updatedFnChan, deletedFnChan chan entities.Function) Runtime {
 	return &runtimeImplementation{
-		functionsService:         functionsService,
-		newFnChan:                newFnChan,
-		updatedFnChan:            updatedFnChan,
-		deletedFnChan:            deletedFnChan,
-		shutdownChan:             make(chan bool),
-		fnCancelMap:              make(map[string]context.CancelFunc),
-		inputConnectorCancelMap:  make(map[string]context.CancelFunc),
-		outputConnectorCancelMap: make(map[string]context.CancelFunc),
+		functionsService: functionsService,
+		newFnChan:        newFnChan,
+		updatedFnChan:    updatedFnChan,
+		deletedFnChan:    deletedFnChan,
+		shutdownChan:     make(chan bool),
+		fnCancelMap:      make(map[string]context.CancelFunc),
 	}
 }
 
@@ -76,14 +72,6 @@ func (r *runtimeImplementation) Run() {
 				cancel()
 			}
 
-			for _, cancel := range r.inputConnectorCancelMap {
-				cancel()
-			}
-
-			for _, cancel := range r.outputConnectorCancelMap {
-				cancel()
-			}
-
 			return
 		}
 	}
@@ -94,6 +82,9 @@ func (r *runtimeImplementation) Shutdown() {
 }
 
 func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
+	ctx, cancel := context.WithCancel(context.Background())
+	r.fnCancelMap[function.ID] = cancel
+
 	inputConnector, err := inputConnectorByType(function.InputConnectorType, function.InputConnectorConfiguration)
 
 	if err != nil {
@@ -102,11 +93,7 @@ func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
 	}
 
 	inputDataChan := make(chan []byte)
-	inputConnectorCtx, cancel := context.WithCancel(context.Background())
-
-	inputConnector.Listen(inputDataChan, inputConnectorCtx)
-
-	r.inputConnectorCancelMap[function.ID] = cancel
+	inputConnector.Listen(inputDataChan, ctx)
 
 	outputConnector, err := outputConnectorByType(function.OutputConnectorType, function.OutputConnectorConfiguration)
 
@@ -116,30 +103,20 @@ func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
 	}
 
 	outputDataChan := make(chan []byte)
-	outputConnectorCtx, cancel := context.WithCancel(context.Background())
+	outputConnector.Publish(outputDataChan, ctx)
 
-	outputConnector.Publish(outputDataChan, outputConnectorCtx)
-
-	r.outputConnectorCancelMap[function.ID] = cancel
-
-	fnCtx, cancel := context.WithCancel(context.Background())
-
-	go r.runFunction(function, inputDataChan, outputDataChan, fnCtx)
-
-	r.fnCancelMap[function.ID] = cancel
+	go r.runFunction(function, inputDataChan, outputDataChan, ctx)
 
 	r.functionsService.UpdateOne(function, entities.Function{Status: entities.RUNNING_STATUS})
 	return
 }
 
 func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function) {
-	inputConnectorCancel := r.inputConnectorCancelMap[function.ID]
-	outputConnectorCancel := r.outputConnectorCancelMap[function.ID]
-	functionCancel := r.fnCancelMap[function.ID]
+	oldCancel := r.fnCancelMap[function.ID]
+	oldCancel()
 
-	inputConnectorCancel()
-	outputConnectorCancel()
-	functionCancel()
+	ctx, cancel := context.WithCancel(context.Background())
+	r.fnCancelMap[function.ID] = cancel
 
 	inputConnector, err := inputConnectorByType(function.InputConnectorType, function.InputConnectorConfiguration)
 
@@ -149,11 +126,7 @@ func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function)
 	}
 
 	inputDataChan := make(chan []byte)
-	inputConnectorCtx, cancel := context.WithCancel(context.Background())
-
-	inputConnector.Listen(inputDataChan, inputConnectorCtx)
-
-	r.inputConnectorCancelMap[function.ID] = cancel
+	inputConnector.Listen(inputDataChan, ctx)
 
 	outputConnector, err := outputConnectorByType(function.OutputConnectorType, function.OutputConnectorConfiguration)
 
@@ -163,30 +136,17 @@ func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function)
 	}
 
 	outputDataChan := make(chan []byte)
-	outputConnectorCtx, cancel := context.WithCancel(context.Background())
+	outputConnector.Publish(outputDataChan, ctx)
 
-	outputConnector.Publish(outputDataChan, outputConnectorCtx)
-
-	r.outputConnectorCancelMap[function.ID] = cancel
-
-	fnCtx, cancel := context.WithCancel(context.Background())
-
-	go r.runFunction(function, inputDataChan, outputDataChan, fnCtx)
-
-	r.fnCancelMap[function.ID] = cancel
+	go r.runFunction(function, inputDataChan, outputDataChan, ctx)
 
 	r.functionsService.UpdateOne(function, entities.Function{Status: entities.RUNNING_STATUS})
 	return
 }
 
 func (r *runtimeImplementation) handleFunctionDelete(function entities.Function) {
-	inputConnectorCancel := r.inputConnectorCancelMap[function.ID]
-	outputConnectorCancel := r.outputConnectorCancelMap[function.ID]
-	functionCancel := r.fnCancelMap[function.ID]
-
-	inputConnectorCancel()
-	outputConnectorCancel()
-	functionCancel()
+	cancel := r.fnCancelMap[function.ID]
+	cancel()
 
 	return
 }
