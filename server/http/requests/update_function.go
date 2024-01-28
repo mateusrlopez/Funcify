@@ -32,9 +32,9 @@ func (req *UpdateFunction) Validate() error {
 		validation.Field(req.Name, validation.Required),
 		validation.Field(req.SourceCode, validation.Required),
 		validation.Field(req.MethodToExecute, validation.Required),
-		validation.Field(req.InputConnectorType, validation.Required, validation.In(entities.KAFKA_CONNECTOR, entities.RABBITMQ_CONNECTOR)),
+		validation.Field(req.InputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
 		validation.Field(req.InputConnectorConfiguration, validation.Required),
-		validation.Field(req.OutputConnectorType, validation.Required, validation.In(entities.KAFKA_CONNECTOR, entities.RABBITMQ_CONNECTOR)),
+		validation.Field(req.OutputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
 		validation.Field(req.OutputConnectorConfiguration, validation.Required),
 	)
 }

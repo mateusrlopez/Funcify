@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/mateusrlopez/funcify/clients"
 	"github.com/mateusrlopez/funcify/entities"
 	"github.com/mateusrlopez/funcify/http"
 	"github.com/mateusrlopez/funcify/http/handlers"
 	"github.com/mateusrlopez/funcify/http/middlewares"
-	"github.com/mateusrlopez/funcify/infrastructure/database"
+	"github.com/mateusrlopez/funcify/models"
 	"github.com/mateusrlopez/funcify/repositories"
 	"github.com/mateusrlopez/funcify/runtime"
 	"github.com/mateusrlopez/funcify/services"
@@ -25,13 +26,13 @@ func init() {
 }
 
 func main() {
-	db, err := database.NewDatabaseClient(environment.Database.Dialect, environment.Database.DSN, environment.Database.ConnectionAttempts, environment.Database.ConnectionAttemptInterval)
+	db, err := clients.NewDatabase(environment.Database.Dialect, environment.Database.DSN, environment.Database.ConnectionAttempts, environment.Database.ConnectionAttemptInterval)
 
 	if err != nil {
 		panic(err)
 	}
 
-	err = database.CreateTables(db)
+	err = db.AutoMigrate(&models.User{}, &models.Session{}, &models.Function{})
 
 	if err != nil {
 		panic(err)
@@ -40,6 +41,7 @@ func main() {
 	newFnChan := make(chan entities.Function)
 	updatedFnChan := make(chan entities.Function)
 	deletedFnChan := make(chan entities.Function)
+	fnStatusChangeChan := make(chan entities.Function)
 
 	functionsRepository := repositories.NewFunctions(db)
 	sessionsRepository := repositories.NewSessions(db)
@@ -50,14 +52,18 @@ func main() {
 	sessionsService := services.NewSessions(sessionsRepository, usersService, utils.CompareHashToRaw)
 
 	authHandler := handlers.NewAuth(sessionsService)
-	functionsHandler := handlers.NewFunctions(functionsService)
+	functionsHandler := handlers.NewFunctions(functionsService, fnStatusChangeChan)
 	usersHandler := handlers.NewUsers(usersService)
 
 	authCookieMiddleware := middlewares.NewAuthCookie(sessionsService, usersService)
 
 	router := http.NewRouter(authHandler, functionsHandler, usersHandler, authCookieMiddleware)
 
-	r := runtime.NewRuntime(functionsService, newFnChan, updatedFnChan, deletedFnChan)
+	r := runtime.NewRuntime(functionsService, newFnChan, updatedFnChan, deletedFnChan, fnStatusChangeChan)
+
+	if err = r.ExecuteExistingFunctions(); err != nil {
+		panic(err)
+	}
 
 	go r.Run()
 	defer r.Shutdown()

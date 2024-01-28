@@ -3,8 +3,8 @@ package entities
 import "time"
 
 const (
-	ADMIN_ROLE  = "ADMIN"
-	COMMON_ROLE = "COMMON"
+	AdminRole  = "ADMIN"
+	CommonRole = "COMMON"
 )
 
 type User struct {

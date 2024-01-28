@@ -3,15 +3,14 @@ package entities
 import "time"
 
 const (
-	RABBITMQ_CONNECTOR = "RABBITMQ"
-	KAFKA_CONNECTOR    = "KAFKA"
+	MqttConnector  = "MQTT"
+	RedisConnector = "REDIS"
 )
 
 const (
-	CREATING_STATUS = "CREATING"
-	RUNNING_STATUS  = "RUNNING"
-	STOPPED_STATUS  = "STOPPED"
-	ERROR_STATUS    = "ERROR"
+	CreatingStatus = "CREATING"
+	RunningStatus  = "RUNNING"
+	ErrorStatus    = "ERROR"
 )
 
 type Function struct {

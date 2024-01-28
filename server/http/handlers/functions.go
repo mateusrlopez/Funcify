@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/mateusrlopez/funcify/entities"
 	"github.com/mateusrlopez/funcify/http/requests"
 	"github.com/mateusrlopez/funcify/http/responses"
 	"github.com/mateusrlopez/funcify/services"
@@ -10,12 +12,14 @@ import (
 )
 
 type Functions struct {
-	functionsService services.Functions
+	functionsService   services.Functions
+	fnStatusChangeChan chan entities.Function
 }
 
-func NewFunctions(functionsService services.Functions) Functions {
+func NewFunctions(functionsService services.Functions, fnStatusChangeChan chan entities.Function) Functions {
 	return Functions{
-		functionsService: functionsService,
+		functionsService:   functionsService,
+		fnStatusChangeChan: fnStatusChangeChan,
 	}
 }
 
@@ -118,5 +122,17 @@ func (h Functions) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := h.functionsService.DeleteOneByID(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+}
+
+func (h Functions) NotifyStatusChange(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	for function := range h.fnStatusChangeChan {
+		fmt.Fprintf(w, "event: function.%s.status\n", function.ID)
+		fmt.Fprintf(w, "data: %s\n\n", function.Status)
+		w.(http.Flusher).Flush()
 	}
 }

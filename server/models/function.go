@@ -59,6 +59,6 @@ func (Function) TableName() string {
 
 func (f *Function) BeforeCreate(tx *gorm.DB) error {
 	f.ID = utils.GenerateUUID()
-	f.Status = entities.CREATING_STATUS
+	f.Status = entities.CreatingStatus
 	return nil
 }

@@ -24,6 +24,6 @@ func (req *CreateUser) Validate() error {
 	return validation.ValidateStruct(req,
 		validation.Field(req.Email, validation.Required, is.Email),
 		validation.Field(req.Password, validation.Required, validation.Min(8)),
-		validation.Field(req.Role, validation.Required, validation.In(entities.ADMIN_ROLE, entities.COMMON_ROLE)),
+		validation.Field(req.Role, validation.Required, validation.In(entities.AdminRole, entities.CommonRole)),
 	)
 }

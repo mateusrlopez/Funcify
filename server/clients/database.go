@@ -1,4 +1,4 @@
-package database
+package clients
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ var (
 	ErrDialectNotImplemented = errors.New("could not instantiate a connection for given dialect")
 )
 
-func NewDatabaseClient(dialect, dsn string, connectionAttempts uint, connectionAttemptInterval time.Duration) (*gorm.DB, error) {
+func NewDatabase(dialect, dsn string, connectionAttempts uint, connectionAttemptInterval time.Duration) (*gorm.DB, error) {
 	var client *gorm.DB
 	var err error
 
@@ -46,7 +46,7 @@ func connectByDialect(dialect, dsn string) (*gorm.DB, error) {
 		return nil, ErrDialectNotImplemented
 	}
 
-	client, err := gorm.Open(dialector, &gorm.Config{Logger: logger.Default.LogMode(logger.Error)})
+	client, err := gorm.Open(dialector, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 
 	if err != nil {
 		return nil, err

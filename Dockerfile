@@ -6,7 +6,7 @@ ENV CGO_ENABLED 0
 ENV GOOS linux
 ENV GO11MODULE on
 
-COPY . .
+COPY server .
 
 RUN go mod download
 RUN go build -o funcify .

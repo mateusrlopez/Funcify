@@ -1,8 +1,8 @@
 include .env
 export
 
-run-server:
-	go run server/cmd/main.go
+run:
+	go run server/main.go
 
 test-server:
 	go test -v server/.../.

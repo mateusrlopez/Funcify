@@ -43,6 +43,7 @@ func NewRouter(authHandler handlers.Auth, functionsHandler handlers.Functions, u
 				r.Get("/", functionsHandler.Index)
 				r.Get("/:id", functionsHandler.Get)
 				r.Put("/:id", functionsHandler.Update)
+				r.Get("/notify-status-change", functionsHandler.NotifyStatusChange)
 
 				r.Group(func(r chi.Router) {
 					r.Use(middlewares.Admin)
