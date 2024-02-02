@@ -1,25 +1,18 @@
 import { Panel } from "@/app/(external)/admin/_components/panel";
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
-import { ReactElement } from "react";
+import { Form } from "@/app/(external)/admin/forgot/form";
+import { Title, Subtitle } from "@/app/(external)/admin/styles";
+import { ReactNode } from "react";
 
-import { Root, Title, Subtitle } from "./styles";
+import { Root } from "./styles";
 
-const ForgotPassword = (): ReactElement => {
+const ForgotPassword = (): ReactNode => {
     return (
         <main>
             <Panel>
                 <Root>
                     <Title>Reset your password</Title>
                     <Subtitle>We will send you an email with password change instructions</Subtitle>
-
-                    <Input>
-                        <Input.Label fieldId="email">E-mail</Input.Label>
-                        <Input.Field tag="input" id="email" type="text" max={64} />
-                    </Input>
-
-                    <div style={{ marginTop: "5px" }} />
-                    <Button full>Continue</Button>
+                    <Form />
                 </Root>
             </Panel>
         </main>

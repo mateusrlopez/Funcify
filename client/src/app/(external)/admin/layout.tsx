@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { PropsWithChildren, ReactElement } from "react";
+import { PropsWithChildren, ReactNode } from "react";
 
 import { Creators, Root } from "../styles";
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: "Description Login Page",
 };
 
-const Layout = ({ children }: PropsWithChildren): ReactElement => {
+const Layout = ({ children }: PropsWithChildren): ReactNode => {
     return (
         <Root>
             {children}

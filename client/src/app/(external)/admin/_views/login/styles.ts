@@ -13,17 +13,6 @@ export const Root = styled.div`
     padding: 40px;
 `;
 
-export const Title = styled.h1`
-    ${({ theme }) => css`
-        font-size: ${theme.fontSize.md};
-        font-weight: ${theme.fontWeight.bold};
-        font-family: ${theme.fontFamily.inter};
-        color: ${theme.colors.gray100};
-        margin-bottom: 15px;
-        text-align: center;
-    `}
-`;
-
 export const ForgotPassword = styled(Link)`
     ${({ theme }) => css`
         all: unset;

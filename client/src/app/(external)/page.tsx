@@ -1,8 +1,8 @@
 import { Root, StatusPanel, Tag, Text, LinkToLogin, Creators } from "@/app/(external)/styles";
 import Link from "next/link";
-import { ReactElement } from "react";
+import { ReactNode } from "react";
 
-const Home = (): ReactElement => {
+const Home = (): ReactNode => {
     const now = new Date().toLocaleDateString("en-US", {
         weekday: "short",
         day: "numeric",

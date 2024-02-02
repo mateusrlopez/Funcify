@@ -1,9 +1,9 @@
 import { Login } from "@/app/(external)/admin/_views/login";
-import { ReactElement } from "react";
+import { ReactNode } from "react";
 
 import { Panel } from "./_components/panel";
 
-const Admin = (): ReactElement => {
+const Admin = (): ReactNode => {
     return (
         <Panel>
             <Login />
