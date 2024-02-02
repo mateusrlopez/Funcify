@@ -8,9 +8,7 @@ import { ThemeProvider } from "styled-components";
 const Providers = ({ children }: PropsWithChildren): ReactElement => {
     return (
         <StyledComponentsRegistry>
-            <ThemeProvider theme={CoreTheme}>
-                {children}
-            </ThemeProvider>
+            <ThemeProvider theme={CoreTheme}>{children}</ThemeProvider>
         </StyledComponentsRegistry>
     );
 };
