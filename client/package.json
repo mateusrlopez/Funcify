@@ -8,8 +8,7 @@
     "start:prod": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --dir . --fix",
-    "lint-staged": "lint-staged",
-    "prepare": "husky install"
+    "lint-staged": "lint-staged"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -59,7 +58,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-testing-library": "^6.2.0",
     "eslint-plugin-unused-imports": "^3.0.0",
-    "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "prettier": "^3.1.1",
     "typescript": "^5"
