@@ -5,7 +5,7 @@ import styled from "styled-components";
 export const Root = styled.nav`
     width: 100%;
     height: 40px;
-    background: ${({ theme }) => theme.colors.gray40};
+    background: ${({ theme }) => theme.colors.gray50};
     border-bottom: 1px solid ${({ theme }) => theme.colors.lighterCyan};
     padding: 0 10px;
     display: flex;
