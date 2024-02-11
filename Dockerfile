@@ -1,4 +1,4 @@
-FROM golang:1.20 AS builder
+FROM golang:1.20 AS go-builder
 
 WORKDIR /app
 
@@ -13,8 +13,8 @@ RUN go build -o funcify .
 
 FROM alpine:latest
 
-WORKDIR /usr/bin
+WORKDIR /app
 
-COPY --from=builder /app/funcify .
+COPY --from=go-builder /app/funcify .
 
-RUN [ "funcify" ]
+RUN [ "./funcify" ]

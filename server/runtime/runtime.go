@@ -9,6 +9,7 @@ import (
 	"github.com/mateusrlopez/funcify/runtime/connectors"
 	"github.com/mateusrlopez/funcify/services"
 	"github.com/mateusrlopez/funcify/settings"
+	"github.com/rs/zerolog/log"
 )
 
 type Runtime interface {
@@ -49,6 +50,8 @@ func (r *runtimeImplementation) ExecuteExistingFunctions() error {
 	if err != nil {
 		return err
 	}
+
+	log.Info().Int("total", len(functions)).Msg("starting the execution of the already existing functions")
 
 	for _, function := range functions {
 		go r.handleNewFunction(function)
@@ -93,9 +96,11 @@ func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
 	inputConnector, err := connectorByType(function.InputConnectorType, function.InputConnectorConfiguration)
 
 	if err != nil {
+		log.Error().Str("connectorType", function.InputConnectorType).Err(err).Msg("could not instantiate the new function input connector")
+
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			panic(err)
+			log.Fatal().Err(err).Msg("could not update function status")
 		}
 		r.fnStatusChangeChan <- function
 		return
@@ -107,9 +112,11 @@ func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
 	outputConnector, err := connectorByType(function.OutputConnectorType, function.OutputConnectorConfiguration)
 
 	if err != nil {
+		log.Error().Str("connectorType", function.OutputConnectorType).Err(err).Msg("could not instantiate the new function output connector")
+
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			panic(err)
+			log.Fatal().Err(err).Msg("could not update function status")
 		}
 		r.fnStatusChangeChan <- function
 		return
@@ -122,7 +129,7 @@ func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
 
 	function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.RunningStatus})
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("could not update function status")
 	}
 
 	r.fnStatusChangeChan <- function
@@ -140,9 +147,11 @@ func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function)
 	inputConnector, err := connectorByType(function.InputConnectorType, function.InputConnectorConfiguration)
 
 	if err != nil {
+		log.Error().Str("connectorType", function.InputConnectorType).Err(err).Msg("could not instantiate the new function input connector")
+
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			panic(err)
+			log.Fatal().Err(err).Msg("could not update function status")
 		}
 		r.fnStatusChangeChan <- function
 		return
@@ -154,9 +163,11 @@ func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function)
 	outputConnector, err := connectorByType(function.OutputConnectorType, function.OutputConnectorConfiguration)
 
 	if err != nil {
+		log.Error().Str("connectorType", function.OutputConnectorType).Err(err).Msg("could not instantiate the new function output connector")
+
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			panic(err)
+			log.Fatal().Err(err).Msg("could not update function status")
 		}
 		r.fnStatusChangeChan <- function
 		return
@@ -169,7 +180,7 @@ func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function)
 
 	function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.RunningStatus})
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("could not update function status")
 	}
 	r.fnStatusChangeChan <- function
 }
@@ -188,7 +199,7 @@ func (r *runtimeImplementation) runFunction(function entities.Function, inputDat
 		case <-errorChan:
 			updated, err := r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 			if err != nil {
-				panic(err)
+				log.Fatal().Err(err).Msg("could not update function status")
 			}
 			r.fnStatusChangeChan <- updated
 			return
@@ -200,7 +211,7 @@ func (r *runtimeImplementation) runFunction(function entities.Function, inputDat
 			if err != nil {
 				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 				if err != nil {
-					panic(err)
+					log.Fatal().Err(err).Msg("could not update function status")
 				}
 				r.fnStatusChangeChan <- function
 				return
@@ -211,7 +222,7 @@ func (r *runtimeImplementation) runFunction(function entities.Function, inputDat
 			if !ok {
 				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 				if err != nil {
-					panic(err)
+					log.Fatal().Err(err).Msg("could not update function status")
 				}
 				r.fnStatusChangeChan <- function
 				return
@@ -222,7 +233,7 @@ func (r *runtimeImplementation) runFunction(function entities.Function, inputDat
 			if err != nil {
 				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 				if err != nil {
-					panic(err)
+					log.Fatal().Err(err).Msg("could not update function status")
 				}
 				r.fnStatusChangeChan <- function
 				return

@@ -3,7 +3,7 @@ version: '3'
 services:
   postgres:
     image: postgres
-    container_name: postgres_container
+    container_name: postgres
     restart: always
     ports:
       - "5432:5432"
@@ -14,7 +14,7 @@ services:
 
   mysql:
     image: mysql
-    container_name: mysql_container
+    container_name: mysql
     restart: always
     ports:
       - "3306:3306"
@@ -23,3 +23,19 @@ services:
       MYSQL_USER: funcify
       MYSQL_DATABASE: funcify
       MYSQL_RANDOM_ROOT_PASSWORD: true
+
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--requirepass", "funcify"]
+
+  emqx:
+    image: emqx
+    container_name: emqx
+    restart: always
+    ports:
+      - "1883:1883"
+      - "18083:18083"

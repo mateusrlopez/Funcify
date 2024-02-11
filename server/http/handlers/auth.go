@@ -2,61 +2,63 @@ package handlers
 
 import (
 	"encoding/json"
+	chimiddlewares "github.com/go-chi/chi/v5/middleware"
+	"github.com/mateusrlopez/funcify/http/cookies"
 	"github.com/mateusrlopez/funcify/http/middlewares"
 	"github.com/mateusrlopez/funcify/http/requests"
 	"github.com/mateusrlopez/funcify/services"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
 type Auth struct {
-	sessionsService services.Sessions
+	authService services.Auth
 }
 
-func NewAuth(sessionsService services.Sessions) Auth {
+func NewAuth(authService services.Auth) Auth {
 	return Auth{
-		sessionsService: sessionsService,
+		authService: authService,
 	}
 }
 
 func (h Auth) SignIn(w http.ResponseWriter, r *http.Request) {
 	var req requests.SignIn
 
+	requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Error().Err(err).Str("requestID", requestID).Msg("could not decode the request body")
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
+	defer r.Body.Close()
 
 	if err := req.Validate(); err != nil {
+		log.Error().Err(err).Str("requestID", requestID).Msg("could not validate the request body")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	sessionID, err := h.sessionsService.Create(req.Email, req.Password)
+	sessionID, err := h.authService.SignIn(req.Email, req.Password)
 
 	if err != nil {
+		log.Error().Err(err).Str("requestID", requestID).Msg("could not sign in with given credentials")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	cookie := http.Cookie{
-		Name:       "session",
-		Value:      sessionID,
-		Path:       "/api/v2",
-		HttpOnly:   false,
-		Secure:     false,
-		RawExpires: "Session",
-		SameSite:   http.SameSiteStrictMode,
-	}
-	http.SetCookie(w, &cookie)
+	cookie := cookies.NewSession(sessionID)
+	http.SetCookie(w, cookie)
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h Auth) SignOut(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	sessionID := ctx.Value(middlewares.SK).(string)
+	sessionID := r.Context().Value(middlewares.SK).(string)
+	requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
 
-	if err := h.sessionsService.DeleteOneByID(sessionID); err != nil {
+	if err := h.authService.SignOut(sessionID); err != nil {
+		log.Error().Err(err).Str("requestID", requestID).Msg("could not delete session")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

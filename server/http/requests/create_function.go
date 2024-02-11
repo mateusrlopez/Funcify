@@ -15,7 +15,7 @@ type CreateFunction struct {
 	OutputConnectorConfiguration map[string]interface{} `json:"outputConnectorConfiguration"`
 }
 
-func (req *CreateFunction) ToEntity() entities.Function {
+func (req CreateFunction) ToEntity() entities.Function {
 	return entities.Function{
 		Name:                         req.Name,
 		SourceCode:                   req.SourceCode,
@@ -27,14 +27,14 @@ func (req *CreateFunction) ToEntity() entities.Function {
 	}
 }
 
-func (req *CreateFunction) Validate() error {
-	return validation.ValidateStruct(req,
-		validation.Field(req.Name, validation.Required),
-		validation.Field(req.SourceCode, validation.Required),
-		validation.Field(req.MethodToExecute, validation.Required),
-		validation.Field(req.InputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
-		validation.Field(req.InputConnectorConfiguration, validation.Required),
-		validation.Field(req.OutputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
-		validation.Field(req.OutputConnectorConfiguration, validation.Required),
+func (req CreateFunction) Validate() error {
+	return validation.ValidateStruct(&req,
+		validation.Field(&req.Name, validation.Required),
+		validation.Field(&req.SourceCode, validation.Required),
+		validation.Field(&req.MethodToExecute, validation.Required),
+		validation.Field(&req.InputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
+		validation.Field(&req.InputConnectorConfiguration, validation.Required),
+		validation.Field(&req.OutputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
+		validation.Field(&req.OutputConnectorConfiguration, validation.Required),
 	)
 }
