@@ -88,6 +88,8 @@ func (r *runtimeImplementation) Shutdown() {
 }
 
 func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
+	log.Info().Str("id", function.ID).Msg("starting process of execution of the function")
+
 	ctx, cancel := context.WithCancel(context.Background())
 	r.fnCancelMap[function.ID] = cancel
 
@@ -96,46 +98,56 @@ func (r *runtimeImplementation) handleNewFunction(function entities.Function) {
 	inputConnector, err := connectorByType(function.InputConnectorType, function.InputConnectorConfiguration)
 
 	if err != nil {
-		log.Error().Str("connectorType", function.InputConnectorType).Err(err).Msg("could not instantiate the new function input connector")
+		log.Error().Err(err).Str("id", function.ID).Str("connectorType", function.InputConnectorType).Msg("could not instantiate the new function input connector")
 
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			log.Fatal().Err(err).Msg("could not update function status")
+			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+			return
 		}
+
 		r.fnStatusChangeChan <- function
 		return
 	}
 
 	inputDataChan := make(chan []byte)
-	inputConnector.Listen(inputDataChan, errorChan, ctx)
 
 	outputConnector, err := connectorByType(function.OutputConnectorType, function.OutputConnectorConfiguration)
 
 	if err != nil {
-		log.Error().Str("connectorType", function.OutputConnectorType).Err(err).Msg("could not instantiate the new function output connector")
+		log.Error().Err(err).Str("id", function.ID).Str("connectorType", function.OutputConnectorType).Msg("could not instantiate the new function output connector")
 
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			log.Fatal().Err(err).Msg("could not update function status")
+			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+			return
 		}
+
 		r.fnStatusChangeChan <- function
 		return
 	}
 
 	outputDataChan := make(chan []byte)
-	outputConnector.Publish(outputDataChan, errorChan, ctx)
 
 	go r.runFunction(function, inputDataChan, outputDataChan, errorChan, ctx)
+	go outputConnector.Publish(outputDataChan, errorChan, ctx)
+	go inputConnector.Listen(inputDataChan, errorChan, ctx)
 
 	function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.RunningStatus})
 	if err != nil {
-		log.Fatal().Err(err).Msg("could not update function status")
+		log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+		return
 	}
 
+	log.Info().Str("id", function.ID).Msg("function is running")
+
 	r.fnStatusChangeChan <- function
+	return
 }
 
 func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function) {
+	log.Info().Str("id", function.ID).Msg("starting process to update the execution of the function")
+
 	oldCancel := r.fnCancelMap[function.ID]
 	oldCancel()
 
@@ -147,48 +159,59 @@ func (r *runtimeImplementation) handleFunctionUpdate(function entities.Function)
 	inputConnector, err := connectorByType(function.InputConnectorType, function.InputConnectorConfiguration)
 
 	if err != nil {
-		log.Error().Str("connectorType", function.InputConnectorType).Err(err).Msg("could not instantiate the new function input connector")
+		log.Error().Err(err).Str("connectorType", function.InputConnectorType).Str("id", function.ID).Msg("could not instantiate the new function input connector")
 
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			log.Fatal().Err(err).Msg("could not update function status")
+			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+			return
 		}
+
 		r.fnStatusChangeChan <- function
 		return
 	}
 
 	inputDataChan := make(chan []byte)
-	inputConnector.Listen(inputDataChan, errorChan, ctx)
 
 	outputConnector, err := connectorByType(function.OutputConnectorType, function.OutputConnectorConfiguration)
 
 	if err != nil {
-		log.Error().Str("connectorType", function.OutputConnectorType).Err(err).Msg("could not instantiate the new function output connector")
+		log.Error().Err(err).Str("connectorType", function.OutputConnectorType).Str("id", function.ID).Msg("could not instantiate the new function output connector")
 
 		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 		if err != nil {
-			log.Fatal().Err(err).Msg("could not update function status")
+			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+			return
 		}
+
 		r.fnStatusChangeChan <- function
 		return
 	}
 
 	outputDataChan := make(chan []byte)
-	outputConnector.Publish(outputDataChan, errorChan, ctx)
 
 	go r.runFunction(function, inputDataChan, outputDataChan, errorChan, ctx)
+	go outputConnector.Publish(outputDataChan, errorChan, ctx)
+	go inputConnector.Listen(inputDataChan, errorChan, ctx)
 
 	function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.RunningStatus})
 	if err != nil {
-		log.Fatal().Err(err).Msg("could not update function status")
+		log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+		return
 	}
+
+	log.Info().Str("id", function.ID).Msg("function is running")
+
 	r.fnStatusChangeChan <- function
 }
 
 func (r *runtimeImplementation) handleFunctionDelete(function entities.Function) {
+	log.Info().Str("id", function.ID).Msg("starting process to kill the execution of the function")
+
 	cancel := r.fnCancelMap[function.ID]
 	cancel()
-	return
+
+	log.Info().Str("id", function.ID).Msg("function is killed")
 }
 
 func (r *runtimeImplementation) runFunction(function entities.Function, inputDataChan, outputDataChan chan []byte, errorChan chan error, ctx context.Context) {
@@ -196,23 +219,33 @@ func (r *runtimeImplementation) runFunction(function entities.Function, inputDat
 		select {
 		case <-ctx.Done():
 			return
-		case <-errorChan:
+		case err := <-errorChan:
+			log.Error().Err(err).Str("id", function.ID).Msg("received error from connector")
+
 			updated, err := r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 			if err != nil {
-				log.Fatal().Err(err).Msg("could not update function status")
+				log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+				return
 			}
+
 			r.fnStatusChangeChan <- updated
 			return
 		case data := <-inputDataChan:
+			log.Debug().Str("id", function.ID).Bytes("data", data).Msg("received data from input")
+
 			vm := goja.New()
 
 			_, err := vm.RunString(function.SourceCode)
 
 			if err != nil {
+				log.Error().Err(err).Str("id", function.ID).Msg("error executing function")
+
 				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 				if err != nil {
-					log.Fatal().Err(err).Msg("could not update function status")
+					log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+					return
 				}
+
 				r.fnStatusChangeChan <- function
 				return
 			}
@@ -220,10 +253,14 @@ func (r *runtimeImplementation) runFunction(function entities.Function, inputDat
 			fn, ok := goja.AssertFunction(vm.Get(function.MethodToExecute))
 
 			if !ok {
+				log.Error().Str("id", function.ID).Msg("error executing function")
+
 				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 				if err != nil {
-					log.Fatal().Err(err).Msg("could not update function status")
+					log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+					return
 				}
+
 				r.fnStatusChangeChan <- function
 				return
 			}
@@ -231,13 +268,19 @@ func (r *runtimeImplementation) runFunction(function entities.Function, inputDat
 			res, err := fn(goja.Undefined(), vm.ToValue(string(data)))
 
 			if err != nil {
+				log.Error().Err(err).Str("id", function.ID).Msg("error executing function")
+
 				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorStatus})
 				if err != nil {
-					log.Fatal().Err(err).Msg("could not update function status")
+					log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
+					return
 				}
+
 				r.fnStatusChangeChan <- function
 				return
 			}
+
+			log.Debug().Str("id", function.ID).Str("data", res.String()).Msg("sending processed data to output")
 
 			outputDataChan <- []byte(res.String())
 		}

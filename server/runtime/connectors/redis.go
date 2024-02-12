@@ -18,24 +18,16 @@ func NewRedisConnector(client *redis.Client, channel string) Connector {
 }
 
 func (c redisConnector) Listen(dataChan chan []byte, errorChan chan error, ctx context.Context) {
+	subscriber := c.client.Subscribe(context.Background(), c.channel)
+	subscriberChannel := subscriber.Channel()
+
 	for {
 		select {
 		case <-ctx.Done():
 			c.client.Close()
 			return
-		default:
-			subscriber := c.client.Subscribe(context.Background(), c.channel)
-
-			for {
-				data, err := subscriber.Receive(context.Background())
-
-				if err != nil {
-					errorChan <- err
-					return
-				}
-
-				dataChan <- data.([]byte)
-			}
+		case message := <-subscriberChannel:
+			dataChan <- []byte(message.Payload)
 		}
 	}
 }

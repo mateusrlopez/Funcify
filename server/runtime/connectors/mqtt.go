@@ -20,20 +20,24 @@ func NewMqttConnector(client mqtt.Client, topic string, qos byte) Connector {
 }
 
 func (c mqttConnector) Listen(dataChan chan []byte, errorChan chan error, ctx context.Context) {
+	channel := make(chan []byte, 1)
+
+	handler := func(client mqtt.Client, message mqtt.Message) {
+		payload := message.Payload()
+		channel <- payload
+	}
+
+	if token := c.client.Subscribe(c.topic, c.qos, handler); token.Wait() && token.Error() != nil {
+		errorChan <- token.Error()
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 			c.client.Disconnect(0)
 			return
-		default:
-			handler := func(client mqtt.Client, message mqtt.Message) {
-				payload := message.Payload()
-				dataChan <- payload
-			}
-
-			if token := c.client.Subscribe(c.topic, c.qos, handler); token.Wait() && token.Error() != nil {
-				errorChan <- token.Error()
-			}
+		case payload := <-channel:
+			dataChan <- payload
 		}
 	}
 }

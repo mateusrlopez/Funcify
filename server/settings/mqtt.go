@@ -18,10 +18,10 @@ func NewMqtt(raw map[string]interface{}) MQTT {
 	}
 }
 
-func (s *MQTT) Validate() error {
-	return validation.ValidateStruct(s,
-		validation.Field(s.Brokers, validation.Each(validation.Required)),
-		validation.Field(s.Topic, validation.Required),
-		validation.Field(s.QoS, validation.Required, validation.In(0, 1, 2)),
+func (s MQTT) Validate() error {
+	return validation.ValidateStruct(&s,
+		validation.Field(&s.Brokers, validation.Each(validation.Required)),
+		validation.Field(&s.Topic, validation.Required),
+		validation.Field(&s.QoS, validation.Required, validation.In(0, 1, 2)),
 	)
 }

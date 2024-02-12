@@ -7,6 +7,7 @@ import (
 	"github.com/mateusrlopez/funcify/http/middlewares"
 	"github.com/mateusrlopez/funcify/http/requests"
 	"github.com/mateusrlopez/funcify/services"
+	"github.com/mateusrlopez/funcify/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
@@ -28,14 +29,14 @@ func (h Auth) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not decode the request body")
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		utils.SendErrorResponse(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	defer r.Body.Close()
 
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not validate the request body")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.SendErrorResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -43,7 +44,7 @@ func (h Auth) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not sign in with given credentials")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -59,7 +60,7 @@ func (h Auth) SignOut(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.authService.SignOut(sessionID); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not delete session")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

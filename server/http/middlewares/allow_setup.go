@@ -3,6 +3,7 @@ package middlewares
 import (
 	chimiddlewares "github.com/go-chi/chi/v5/middleware"
 	"github.com/mateusrlopez/funcify/services"
+	"github.com/mateusrlopez/funcify/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
@@ -25,12 +26,12 @@ func (m AllowSetup) Allow(next http.Handler) http.Handler {
 
 		if err != nil {
 			log.Error().Err(err).Str("requestID", requestID).Msg("could not check if an user exists")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if done {
-			http.Error(w, "setup was already made", http.StatusForbidden)
+			utils.SendErrorResponse(w, "setup was already made", http.StatusForbidden)
 			return
 		}
 

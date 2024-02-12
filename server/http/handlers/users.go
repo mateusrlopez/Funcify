@@ -8,6 +8,7 @@ import (
 	"github.com/mateusrlopez/funcify/http/requests"
 	"github.com/mateusrlopez/funcify/http/responses"
 	"github.com/mateusrlopez/funcify/services"
+	"github.com/mateusrlopez/funcify/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
@@ -29,14 +30,14 @@ func (h Users) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not decode the request body")
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		utils.SendErrorResponse(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	defer r.Body.Close()
 
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not validate the request body")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.SendErrorResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -44,7 +45,7 @@ func (h Users) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not create the user with the given parameters")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -53,7 +54,7 @@ func (h Users) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -65,7 +66,7 @@ func (h Users) Index(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not recover the users")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -73,7 +74,7 @@ func (h Users) Index(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -86,7 +87,7 @@ func (h Users) Get(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not retrieve the user with the given id")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -94,7 +95,7 @@ func (h Users) Get(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -107,7 +108,7 @@ func (h Users) Me(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not retrieve the user with the given id")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -115,7 +116,7 @@ func (h Users) Me(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -128,14 +129,14 @@ func (h Users) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not decode the request body")
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		utils.SendErrorResponse(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	defer r.Body.Close()
 
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not validate the request body")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.SendErrorResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -143,7 +144,7 @@ func (h Users) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not update the user with the given id")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -151,7 +152,7 @@ func (h Users) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -162,7 +163,7 @@ func (h Users) Delete(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.usersService.DeleteOneByID(id); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not delete the user with the given id")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }

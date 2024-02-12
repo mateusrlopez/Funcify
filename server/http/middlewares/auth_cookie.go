@@ -4,6 +4,7 @@ import (
 	"context"
 	chimiddlewares "github.com/go-chi/chi/v5/middleware"
 	"github.com/mateusrlopez/funcify/services"
+	"github.com/mateusrlopez/funcify/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
@@ -37,7 +38,7 @@ func (m AuthCookie) Authenticate(next http.Handler) http.Handler {
 
 		if err != nil {
 			log.Error().Err(err).Str("requestID", requestID).Msg("could not retrieve the auth cookie")
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			utils.SendErrorResponse(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -45,7 +46,7 @@ func (m AuthCookie) Authenticate(next http.Handler) http.Handler {
 
 		if err != nil {
 			log.Error().Err(err).Str("requestID", requestID).Str("sessionID", cookie.Value).Msg("could not retrieve the session with the given id")
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			utils.SendErrorResponse(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -53,7 +54,7 @@ func (m AuthCookie) Authenticate(next http.Handler) http.Handler {
 
 		if err != nil {
 			log.Error().Err(err).Str("requestID", requestID).Str("userID", session.UserID).Msg("could not retrieve the user related to the retrieved session")
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			utils.SendErrorResponse(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 

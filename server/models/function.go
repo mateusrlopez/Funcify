@@ -1,11 +1,27 @@
 package models
 
 import (
+	"encoding/json"
 	"github.com/mateusrlopez/funcify/entities"
 	"github.com/mateusrlopez/funcify/utils"
 	"gorm.io/gorm"
 	"time"
 )
+
+type ConnectorConfiguration map[string]interface{}
+
+func (t *ConnectorConfiguration) Scan(source interface{}) (err error) {
+	var configuration map[string]interface{}
+
+	err = json.Unmarshal(source.([]byte), &configuration)
+
+	if err != nil {
+		return
+	}
+
+	*t = configuration
+	return
+}
 
 type Function struct {
 	ID                           string                 `gorm:"column:id;primaryKey;type:char(36)"`
@@ -14,9 +30,9 @@ type Function struct {
 	MethodToExecute              string                 `gorm:"column:method_to_execute;not null"`
 	Status                       string                 `gorm:"column:status;type:varchar(8);not null"`
 	InputConnectorType           string                 `gorm:"column:input_connector_type;type:varchar(8);not null"`
-	InputConnectorConfiguration  map[string]interface{} `gorm:"column:input_connector_configuration;not null;type:json"`
+	InputConnectorConfiguration  ConnectorConfiguration `gorm:"column:input_connector_configuration;not null;type:json"`
 	OutputConnectorType          string                 `gorm:"column:output_connector_type;type:varchar(8);not null"`
-	OutputConnectorConfiguration map[string]interface{} `gorm:"column:output_connector_configuration;not null;type:json"`
+	OutputConnectorConfiguration ConnectorConfiguration `gorm:"column:output_connector_configuration;not null;type:json"`
 	CreatedAt                    time.Time              `gorm:"column:created_at;type:timestamp;not null"`
 	UpdatedAt                    *time.Time             `gorm:"column:updated_at;type:timestamp"`
 }

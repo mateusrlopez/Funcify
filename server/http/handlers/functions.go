@@ -9,6 +9,7 @@ import (
 	"github.com/mateusrlopez/funcify/http/requests"
 	"github.com/mateusrlopez/funcify/http/responses"
 	"github.com/mateusrlopez/funcify/services"
+	"github.com/mateusrlopez/funcify/utils"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
@@ -32,14 +33,14 @@ func (h Functions) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not decode the request body")
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		utils.SendErrorResponse(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	defer r.Body.Close()
 
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not validate the request body")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.SendErrorResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -47,7 +48,7 @@ func (h Functions) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not create the function with the given parameters")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -56,7 +57,7 @@ func (h Functions) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -68,7 +69,7 @@ func (h Functions) Index(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not recover the functions")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -76,7 +77,7 @@ func (h Functions) Index(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -89,7 +90,7 @@ func (h Functions) Get(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not recover function with given id")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -97,7 +98,7 @@ func (h Functions) Get(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -110,14 +111,14 @@ func (h Functions) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not decode the request body")
-		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		utils.SendErrorResponse(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	defer r.Body.Close()
 
 	if err := req.Validate(); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not validate the request body")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.SendErrorResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -125,7 +126,7 @@ func (h Functions) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not update the function with the given id")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -133,7 +134,7 @@ func (h Functions) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
@@ -144,7 +145,7 @@ func (h Functions) Delete(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.functionsService.DeleteOneByID(id); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not delete the function with the given id")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
