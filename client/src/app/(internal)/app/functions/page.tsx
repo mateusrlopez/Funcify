@@ -1,10 +1,10 @@
-import { Connector } from "@/app/(internal)/app/functions/connector";
-import { Sidebar } from "@/app/(internal)/app/functions/sidebar";
+import { Connector } from "@/app/(internal)/app/functions/Connector";
+import { Sidebar } from "@/app/(internal)/app/functions/Sidebar";
 import { ReactNode } from "react";
 
-import { Root } from "./page.styles";
+import { Root } from "./Page.styles";
 
-const Functions = (): ReactNode => (
+const Page = (): ReactNode => (
     <Root>
         <Sidebar />
         <div />
@@ -12,4 +12,4 @@ const Functions = (): ReactNode => (
     </Root>
 );
 
-export default Functions;
+export default Page;

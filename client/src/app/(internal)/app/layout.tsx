@@ -1,8 +1,8 @@
-import { Footer } from "@/app/(internal)/app/_components/footer";
-import { Navbar } from "@/app/(internal)/app/_components/navbar";
 import { IReactChildren } from "@/interfaces/core";
 import { ReactNode } from "react";
 
+import { Footer } from "./_components/Footer";
+import { Navbar } from "./_components/Navbar";
 import { Root } from "./styles";
 
 const Layout = ({ children }: IReactChildren): ReactNode => (

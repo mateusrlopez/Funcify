@@ -1,17 +1,18 @@
-import { Login } from "@/app/(external)/admin/_views/login";
+import { ResetPassword } from "@/app/(external)/admin/_views/Reset";
 import { ReactNode } from "react";
 
-import { Panel } from "./_components/panel";
+import { Panel } from "./_components/Panel";
 
-const Admin = (): ReactNode => {
+const Page = (): ReactNode => {
     return (
         <Panel>
-            <Login />
+            {/* <Login /> */}
             {/* <Setup /> */}
             {/* <FirstAccess /> */}
             {/* <ForgotPassword /> */}
+            <ResetPassword />
         </Panel>
     );
 };
 
-export default Admin;
+export default Page;
