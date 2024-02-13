@@ -32,7 +32,7 @@ const Form = (): ReactNode => {
                 <Input>
                     <Input.Label fieldId="email">E-mail</Input.Label>
                     <Input.Field
-                        tag="input"
+                        $tag="input"
                         id="email"
                         type="text"
                         max={64}

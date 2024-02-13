@@ -48,7 +48,7 @@ const Form = (): ReactNode => {
                 <Input>
                     <Input.Label fieldId="password">Password</Input.Label>
                     <Input.Field
-                        tag="input"
+                        $tag="input"
                         id="password"
                         type="password"
                         max={64}
@@ -67,7 +67,7 @@ const Form = (): ReactNode => {
                 <Input>
                     <Input.Label fieldId="confirm-password">Confirm Password</Input.Label>
                     <Input.Field
-                        tag="input"
+                        $tag="input"
                         id="confirm-password"
                         type="password"
                         max={64}

@@ -6,13 +6,23 @@ export type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
     children: ReactNode;
     $asChild?: boolean;
     $full?: boolean;
+    $variant?: "primary" | "secondary";
 };
 
-const Button = ({ children, $asChild = false, ...props }: Props): ReactNode => {
+const Button = ({
+    children,
+    $asChild = false,
+    $variant = "primary",
+    ...props
+}: Props): ReactNode => {
     const Comp = $asChild ? PolymorphicComponent : StyledButton;
 
-    // @ts-ignore
-    return <Comp {...props}>{children}</Comp>;
+    return (
+        // @ts-ignore
+        <Comp $variant={$variant} {...props}>
+            {children}
+        </Comp>
+    );
 };
 
 export { Button };

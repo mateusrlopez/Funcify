@@ -8,8 +8,8 @@ export const Root = styled.footer`
     ${({ theme }) => css`
         width: 100%;
         height: 40px;
-        background: ${theme.colors.gray50};
-        border-top: 1px solid ${theme.colors.lighterCyan};
+        background: ${theme.colors.gray20};
+        border-top: 1px solid ${theme.colors.darkestGray};
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -18,10 +18,10 @@ export const Root = styled.footer`
 
 export const ProjectInfo = styled.div`
     ${({ theme }) => css`
-        width: 250px;
+        width: 300px;
         height: 39px;
-        border-right: 1px solid ${theme.colors.lighterCyan};
-        background: ${theme.colors.lighterCyan};
+        border-right: 1px solid ${theme.colors.darkestGray};
+        background: ${theme.colors.darkestGray};
         display: flex;
         align-items: center;
         justify-content: space-between;

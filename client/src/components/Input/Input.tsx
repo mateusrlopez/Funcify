@@ -18,14 +18,14 @@ Input.Label = Label;
 type InputProps = ComponentPropsWithoutRef<"input">;
 
 export type FieldProps = InputProps & {
-    tag: "input" | "textarea";
+    $tag: "input" | "textarea";
 };
 
 const Field = React.forwardRef<HTMLInputElement, FieldProps>(
-    ({ tag, ...props }, ref): ReactNode => {
+    ({ $tag, ...props }, ref): ReactNode => {
         return (
             <div style={{ position: "relative", height: "100%" }}>
-                <InputContainer ref={ref} tag={tag} {...props} />
+                <InputContainer ref={ref} $tag={$tag} {...props} />
             </div>
         );
     }

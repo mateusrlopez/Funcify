@@ -1,8 +1,8 @@
-import { Connector } from "@/app/(internal)/app/functions/Connector";
-import { Sidebar } from "@/app/(internal)/app/functions/Sidebar";
 import { ReactNode } from "react";
 
+import { Connector } from "./Connector";
 import { Root } from "./Page.styles";
+import { Sidebar } from "./Sidebar";
 
 const Page = (): ReactNode => (
     <Root>

@@ -12,7 +12,7 @@ export const Root = styled.button`
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: ${theme.colors.lighterCyan};
+        color: ${theme.colors.darkestGray};
 
         &:hover {
             background-color: ${theme.colors.gray60};

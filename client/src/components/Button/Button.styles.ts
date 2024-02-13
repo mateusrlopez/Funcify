@@ -1,17 +1,16 @@
 "use client";
 
+import { CoreTheme } from "@/theme/core";
 import { Slot } from "@radix-ui/react-slot";
 import styled, { css } from "styled-components";
 
 export const CommonStyles = css`
     ${({ theme }) => css`
-        padding: 7px 15px;
-        background: ${theme.colors.darkestGray};
+        padding: 0 13px;
         border: none;
         font-family: ${theme.fontFamily.inter};
         font-size: ${theme.fontSize.default};
         font-weight: ${theme.fontWeight.regular};
-        color: ${theme.colors.gray10};
         height: 42px;
         border-radius: 4px;
         cursor: pointer;
@@ -21,25 +20,49 @@ export const CommonStyles = css`
         gap: 5px;
 
         &:focus {
-            outline: 1px solid ${theme.colors.darkestCyan};
+            outline: 1px solid ${theme.colors.black};
         }
+    `}
+`;
+
+const VARIANTS = {
+    primary: {
+        backgroundColor: CoreTheme.colors.darkestGray,
+        fontColor: CoreTheme.colors.gray10,
+        hoverBackgroundColor: CoreTheme.colors.black,
+    },
+    secondary: {
+        backgroundColor: CoreTheme.colors.gray50,
+        fontColor: CoreTheme.colors.darkestGray,
+        hoverBackgroundColor: CoreTheme.colors.gray70,
+    },
+};
+
+export const PolymorphicComponent = styled(Slot)<{
+    $full: boolean;
+    $variant: keyof typeof VARIANTS;
+}>`
+    ${CommonStyles};
+    ${({ $full, $variant }) => css`
+        background: ${VARIANTS[$variant].backgroundColor};
+        color: ${VARIANTS[$variant].fontColor};
+        width: ${!$full ? "max-content" : "100%"};
 
         &:hover {
-            background: ${theme.colors.black};
+            background: ${VARIANTS[$variant].hoverBackgroundColor};
         }
     `}
 `;
 
-export const PolymorphicComponent = styled(Slot)<{ $full: boolean }>`
+export const StyledButton = styled.button<{ $full: boolean; $variant: keyof typeof VARIANTS }>`
     ${CommonStyles};
-    ${({ $full }) => css`
+    ${({ $full, $variant }) => css`
+        background: ${VARIANTS[$variant].backgroundColor};
+        color: ${VARIANTS[$variant].fontColor};
         width: ${!$full ? "max-content" : "100%"};
-    `}
-`;
 
-export const StyledButton = styled.button<{ $full: boolean }>`
-    ${CommonStyles};
-    ${({ $full }) => css`
-        width: ${!$full ? "max-content" : "100%"};
+        &:hover {
+            background: ${VARIANTS[$variant].hoverBackgroundColor};
+        }
     `}
 `;

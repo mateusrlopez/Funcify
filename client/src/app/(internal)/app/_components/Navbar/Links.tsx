@@ -6,8 +6,8 @@ import { Root, Option, Icon } from "./Links.styles";
 
 const Links = (): ReactNode => (
     <Root>
-        <Option href="/app/functions">
-            <Icon>
+        <Option href="/app/functions" data-selected="true">
+            <Icon data-selected="true">
                 <FaLaptopCode size={17} />
             </Icon>
             Functions

@@ -34,7 +34,7 @@ export const User = styled.span`
         width: 30px;
         height: 30px;
         border-radius: 4px;
-        background-color: ${theme.colors.lighterCyan};
+        background-color: ${theme.colors.darkestGray};
         display: flex;
         align-items: center;
         justify-content: center;

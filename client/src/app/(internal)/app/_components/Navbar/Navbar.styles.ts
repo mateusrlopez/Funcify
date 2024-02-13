@@ -6,8 +6,8 @@ export const Root = styled.nav`
     ${({ theme }) => css`
         width: 100%;
         height: 40px;
-        background: ${theme.colors.gray50};
-        border-bottom: 1px solid ${theme.colors.lighterCyan};
+        background: ${theme.colors.gray20};
+        border-bottom: 1px solid ${theme.colors.darkestGray};
         padding: 0 10px;
         display: flex;
         align-items: center;

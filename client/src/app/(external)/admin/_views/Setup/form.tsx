@@ -51,7 +51,13 @@ const Form = (): ReactNode => {
             <>
                 <Input>
                     <Input.Label fieldId="name">Name</Input.Label>
-                    <Input.Field tag="input" id="name" type="text" max={64} {...register("name")} />
+                    <Input.Field
+                        $tag="input"
+                        id="name"
+                        type="text"
+                        max={64}
+                        {...register("name")}
+                    />
                 </Input>
                 {errors.name && errors.name.message && (
                     <ErrorMessage>
@@ -65,7 +71,7 @@ const Form = (): ReactNode => {
                 <Input>
                     <Input.Label fieldId="email">E-mail</Input.Label>
                     <Input.Field
-                        tag="input"
+                        $tag="input"
                         id="email"
                         type="text"
                         max={64}
@@ -85,7 +91,7 @@ const Form = (): ReactNode => {
                 <Input>
                     <Input.Label fieldId="password">Password</Input.Label>
                     <Input.Field
-                        tag="input"
+                        $tag="input"
                         id="password"
                         type="password"
                         max={64}
@@ -104,7 +110,7 @@ const Form = (): ReactNode => {
                 <Input>
                     <Input.Label fieldId="confirm-password">Confirm Password</Input.Label>
                     <Input.Field
-                        tag="input"
+                        $tag="input"
                         id="confirm-password"
                         type="password"
                         max={64}

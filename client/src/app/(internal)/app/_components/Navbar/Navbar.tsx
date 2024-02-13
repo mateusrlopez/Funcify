@@ -9,7 +9,7 @@ import { UserDropdown } from "./UserDropdown";
 const Navbar = (): ReactNode => (
     <Root>
         <Brand>
-            <FuncifyLogo fillColor="darkestCyan" width={76} height={30} />
+            <FuncifyLogo fillColor="darkestGray" width={76} height={30} />
         </Brand>
         <Links />
         <Group>

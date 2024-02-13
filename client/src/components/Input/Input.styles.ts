@@ -22,10 +22,10 @@ export const LabelContainer = styled.label`
     `};
 `;
 
-export const InputContainer = styled("input").attrs<FieldProps>(({ tag }) => ({
-    as: `${tag}`,
+export const InputContainer = styled("input").attrs<FieldProps>(({ $tag }) => ({
+    as: `${$tag}`,
 }))<FieldProps>`
-    ${({ theme, as }) => css`
+    ${({ theme, $tag }) => css`
         width: 100%;
         background-color: ${theme.colors.gray10};
         border: 1px solid ${theme.colors.gray50};
@@ -35,8 +35,8 @@ export const InputContainer = styled("input").attrs<FieldProps>(({ tag }) => ({
         font-family: ${theme.fontFamily.inter};
         letter-spacing: ${theme.letterSpacing.default};
         line-height: ${theme.lineHeight.default};
-        min-height: ${as === "textarea" ? "100%" : "42px"};
-        max-height: ${as === "textarea" ? "100%" : "42px"};
+        min-height: ${$tag === "textarea" ? "100%" : "42px"};
+        max-height: ${$tag === "textarea" ? "100%" : "42px"};
         padding: 10px 12px;
         resize: none;
         flex-grow: 1;
