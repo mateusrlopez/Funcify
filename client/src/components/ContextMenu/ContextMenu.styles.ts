@@ -12,12 +12,10 @@ export const StyledPortal = styled(ContextMenu.Portal)``;
 const Content = css`
     min-width: 220px;
     background-color: ${({ theme }) => theme.colors.gray10};
+    border: 1px solid ${({ theme }) => theme.colors.darkestGray};
     border-radius: 4px;
     overflow: hidden;
     padding: 10px;
-    box-shadow:
-        0 10px 38px -10px rgba(22, 23, 24, 0.35),
-        0 10px 20px -15px rgba(22, 23, 24, 0.2);
 `;
 export const StyledContent = styled(ContextMenu.Content)`
     ${Content}
@@ -32,9 +30,9 @@ export const StyledSubContent = styled(ContextMenu.SubContent)`
 const Item = css`
     ${({ theme }) => css`
         font-size: 13px;
-        line-height: ${theme.lineHeight.sm}
+        line-height: ${theme.lineHeight.sm};
         color: ${theme.colors.darkestGray};
-        border-radius: 4px;
+        border-radius: 2px;
         display: flex;
         align-items: center;
         height: 30px;
