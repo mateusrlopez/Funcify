@@ -249,9 +249,3 @@ export const StyledItemIndicator = styled(ItemIndicator)`
     align-items: center;
     justify-content: center;
 `;
-
-export const StyledRightSlot = styled.div`
-    margin-left: auto;
-    padding-left: 20px;
-    color: ${({ theme }) => theme.colors.gray70};
-`;

@@ -17,7 +17,7 @@ export const CommonStyles = css`
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 5px;
+        gap: 7px;
 
         &:focus {
             outline: 1px solid ${theme.colors.black};
