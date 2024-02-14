@@ -36,6 +36,11 @@ const VARIANTS = {
         fontColor: CoreTheme.colors.darkestGray,
         hoverBackgroundColor: CoreTheme.colors.gray70,
     },
+    tertiary: {
+        backgroundColor: CoreTheme.colors.gray80,
+        fontColor: CoreTheme.colors.gray10,
+        hoverBackgroundColor: CoreTheme.colors.gray100,
+    },
 };
 
 export const PolymorphicComponent = styled(Slot)<{

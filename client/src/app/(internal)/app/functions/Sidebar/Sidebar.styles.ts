@@ -5,7 +5,7 @@ import styled, { css } from "styled-components";
 export const Root = styled.aside`
     ${({ theme }) => css`
         width: 100%;
-        height: calc(100vh - 80px);
+        height: calc(100vh - 102px);
         background: ${theme.colors.gray20};
         border-right: 1px solid ${theme.colors.darkestGray};
         display: flex;

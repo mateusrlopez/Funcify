@@ -6,7 +6,7 @@ export type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
     children: ReactNode;
     $asChild?: boolean;
     $full?: boolean;
-    $variant?: "primary" | "secondary";
+    $variant?: "primary" | "secondary" | "tertiary";
 };
 
 const Button = ({

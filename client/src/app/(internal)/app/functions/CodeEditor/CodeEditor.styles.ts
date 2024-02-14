@@ -4,7 +4,7 @@ import styled, { css } from "styled-components";
 
 export const Root = styled.section`
     flex-grow: 1;
-    height: calc(100vh - 80px);
+    height: calc(100vh - 102px);
     overflow: hidden;
     display: flex;
     flex-direction: column;

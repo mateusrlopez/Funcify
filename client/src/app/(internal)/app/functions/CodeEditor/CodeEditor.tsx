@@ -133,7 +133,7 @@ const CodeEditor = (): ReactNode => {
             <CodeMirror
                 value={""}
                 width="100%"
-                height="calc(100vh - 120px)"
+                height="calc(100vh - 142px)"
                 style={{ flexGrow: 1 }}
                 theme={THEMES[editorConfig.theme as keyof typeof THEMES].theme}
                 onChange={(code: string) => console.log(code)}

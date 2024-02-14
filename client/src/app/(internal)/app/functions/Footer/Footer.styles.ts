@@ -7,7 +7,7 @@ import styled, { css } from "styled-components";
 export const Root = styled.footer`
     ${({ theme }) => css`
         width: 100%;
-        height: 40px;
+        height: 62px;
         background: ${theme.colors.gray20};
         border-top: 1px solid ${theme.colors.darkestGray};
         display: flex;
@@ -16,12 +16,21 @@ export const Root = styled.footer`
     `}
 `;
 
+export const Actions = styled.div`
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    flex-grow: 1;
+    border-right: 1px solid ${({ theme }) => theme.colors.darkestGray};
+`;
+
 export const ProjectInfo = styled.div`
     ${({ theme }) => css`
-        width: 300px;
-        height: 39px;
-        border-right: 1px solid ${theme.colors.darkestGray};
-        background: ${theme.colors.darkestGray};
+        width: 299px;
+        height: 61px;
+        background: ${theme.colors.gray100};
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -39,13 +48,16 @@ export const Column = styled.div`
 export const Text = styled.span<{
     $fontSize: keyof typeof CoreTheme.fontSize;
     $fontWeight: keyof typeof CoreTheme.fontWeight;
+    $color: keyof typeof CoreTheme.colors;
 }>`
-    ${({ theme, $fontSize, $fontWeight }) => css`
-        display: block;
+    ${({ theme, $fontSize, $fontWeight, $color }) => css`
+        display: flex;
+        align-items: center;
+        gap: 7px;
         text-align: left;
         font-size: ${theme.fontSize[$fontSize]};
         font-weight: ${theme.fontWeight[$fontWeight]};
-        color: ${theme.colors.white};
+        color: ${theme.colors[$color]};
     `}
 `;
 
