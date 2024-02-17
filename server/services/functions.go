@@ -16,17 +16,17 @@ type Functions interface {
 
 type functionsImplementation struct {
 	functionsRepository repositories.Functions
-	newFnChan           chan entities.Function
-	updatedFnChan       chan entities.Function
-	deletedFnChan       chan entities.Function
+	fnCreateChan        chan entities.Function
+	fnUpdateChan        chan entities.Function
+	fnDeleteChan        chan entities.Function
 }
 
-func NewFunctions(functionRepository repositories.Functions, newFnChan, updatedFnChan, deletedFnChan chan entities.Function) Functions {
+func NewFunctions(functionRepository repositories.Functions, fnCreateChan, fnUpdateChan, fnDeleteChan chan entities.Function) Functions {
 	return functionsImplementation{
 		functionsRepository: functionRepository,
-		newFnChan:           newFnChan,
-		updatedFnChan:       updatedFnChan,
-		deletedFnChan:       deletedFnChan,
+		fnCreateChan:        fnCreateChan,
+		fnUpdateChan:        fnUpdateChan,
+		fnDeleteChan:        fnDeleteChan,
 	}
 }
 
@@ -37,7 +37,7 @@ func (s functionsImplementation) Create(function entities.Function) (entities.Fu
 		return entities.Function{}, err
 	}
 
-	s.newFnChan <- created
+	s.fnCreateChan <- created
 
 	return created, nil
 }
@@ -75,7 +75,7 @@ func (s functionsImplementation) UpdateOneByID(id string, data entities.Function
 		return entities.Function{}, err
 	}
 
-	s.updatedFnChan <- updated
+	s.fnUpdateChan <- updated
 
 	return updated, nil
 }
@@ -95,7 +95,7 @@ func (s functionsImplementation) DeleteOneByID(id string) error {
 		return err
 	}
 
-	s.deletedFnChan <- function
+	s.fnDeleteChan <- function
 
 	return nil
 }

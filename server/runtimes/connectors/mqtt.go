@@ -11,9 +11,9 @@ type mqttConnector struct {
 	qos    byte
 }
 
-func NewMqttConnector(client mqtt.Client, topic string, qos byte) Connector {
+func NewMqttConnector(connection interface{}, topic string, qos byte) Connector {
 	return mqttConnector{
-		client: client,
+		client: connection.(mqtt.Client),
 		topic:  topic,
 		qos:    qos,
 	}

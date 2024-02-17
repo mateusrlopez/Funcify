@@ -10,9 +10,9 @@ type redisConnector struct {
 	channel string
 }
 
-func NewRedisConnector(client *redis.Client, channel string) Connector {
+func NewRedisConnector(connection interface{}, channel string) Connector {
 	return redisConnector{
-		client:  client,
+		client:  connection.(*redis.Client),
 		channel: channel,
 	}
 }
@@ -24,7 +24,6 @@ func (c redisConnector) Listen(dataChan chan []byte, errorChan chan error, ctx c
 	for {
 		select {
 		case <-ctx.Done():
-			c.client.Close()
 			return
 		case message := <-subscriberChannel:
 			dataChan <- []byte(message.Payload)
@@ -36,7 +35,6 @@ func (c redisConnector) Publish(dataChan chan []byte, errorChan chan error, ctx 
 	for {
 		select {
 		case <-ctx.Done():
-			c.client.Close()
 			return
 		case data := <-dataChan:
 			if err := c.client.Publish(context.Background(), c.channel, data).Err(); err != nil {

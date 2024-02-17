@@ -1,31 +1,70 @@
 package settings
 
-import validation "github.com/go-ozzo/ozzo-validation/v4"
+import (
+	"errors"
+	"reflect"
+)
 
-type Redis struct {
+type RedisDataSource struct {
 	Address  string
 	Username string
 	Password string
 	Database int
-	Channel  string
 }
 
-func NewRedis(raw map[string]interface{}) Redis {
-	return Redis{
+func ValidateRawRedisDataSource(raw map[string]interface{}) error {
+	address := raw["address"]
+
+	if reflect.TypeOf(address).Kind() != reflect.String && reflect.ValueOf(address).IsZero() {
+		return errors.New("configuration field address is not valid")
+	}
+
+	username := raw["username"]
+
+	if reflect.TypeOf(username).Kind() != reflect.String && reflect.ValueOf(username).IsZero() {
+		return errors.New("configuration field username is not valid")
+	}
+
+	password := raw["address"]
+
+	if reflect.TypeOf(password).Kind() != reflect.String && reflect.ValueOf(password).IsZero() {
+		return errors.New("configuration field password is not valid")
+	}
+
+	database := raw["database"]
+
+	if reflect.TypeOf(database).Kind() != reflect.Float64 {
+		return errors.New("configuration field database is not valid")
+	}
+
+	return nil
+}
+
+func NewRedisDataSource(raw map[string]interface{}) RedisDataSource {
+	return RedisDataSource{
 		Address:  raw["address"].(string),
 		Username: raw["username"].(string),
 		Password: raw["password"].(string),
 		Database: int(raw["database"].(float64)),
-		Channel:  raw["channel"].(string),
 	}
 }
 
-func (s Redis) Validate() error {
-	return validation.ValidateStruct(&s,
-		validation.Field(&s.Address, validation.Required),
-		validation.Field(&s.Username),
-		validation.Field(&s.Password, validation.Required),
-		validation.Field(&s.Database),
-		validation.Field(&s.Channel, validation.Required),
-	)
+type RedisConnector struct {
+	Channel string
+}
+
+func ValidateRawRedisConnector(raw map[string]interface{}) error {
+	channel := raw["channel"]
+
+	if reflect.TypeOf(channel).Kind() != reflect.String && reflect.ValueOf(channel).IsZero() {
+		return errors.New("configuration field channel is not valid")
+	}
+
+	return nil
+}
+
+func NewRedisConnector(raw map[string]interface{}) RedisConnector {
+	return RedisConnector{
+		Channel: raw["channel"].(string),
+	}
 }

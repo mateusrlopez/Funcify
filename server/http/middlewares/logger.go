@@ -31,6 +31,10 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.writer.WriteHeader(code)
 }
 
+func (rw *responseWriter) Flush() {
+	rw.writer.(http.Flusher).Flush()
+}
+
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)

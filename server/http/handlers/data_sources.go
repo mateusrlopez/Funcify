@@ -14,20 +14,20 @@ import (
 	"net/http"
 )
 
-type Functions struct {
-	functionsService   services.Functions
-	fnStatusChangeChan chan entities.Function
+type DataSources struct {
+	dataSourcesService         services.DataSources
+	dataSourceStatusChangeChan chan entities.DataSource
 }
 
-func NewFunctions(functionsService services.Functions, fnStatusChangeChan chan entities.Function) Functions {
-	return Functions{
-		functionsService:   functionsService,
-		fnStatusChangeChan: fnStatusChangeChan,
+func NewDataSources(dataSourcesService services.DataSources, dataSourceStatusChangeChan chan entities.DataSource) DataSources {
+	return DataSources{
+		dataSourcesService:         dataSourcesService,
+		dataSourceStatusChangeChan: dataSourceStatusChangeChan,
 	}
 }
 
-func (h Functions) Create(w http.ResponseWriter, r *http.Request) {
-	var req requests.CreateFunction
+func (h DataSources) Create(w http.ResponseWriter, r *http.Request) {
+	var req requests.CreateDataSource
 
 	requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
 
@@ -44,15 +44,15 @@ func (h Functions) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	function, err := h.functionsService.Create(req.ToEntity())
+	dataSource, err := h.dataSourcesService.Create(req.ToEntity())
 
 	if err != nil {
-		log.Error().Err(err).Str("requestID", requestID).Msg("could not create the function with the given parameters")
+		log.Error().Err(err).Str("requestID", requestID).Msg("could not create the dataSource with the given parameters")
 		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	res := responses.NewFunction(function)
+	res := responses.NewDataSource(dataSource)
 
 	w.WriteHeader(http.StatusCreated)
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
@@ -62,18 +62,18 @@ func (h Functions) Create(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h Functions) Index(w http.ResponseWriter, r *http.Request) {
+func (h DataSources) Index(w http.ResponseWriter, r *http.Request) {
 	requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
 
-	functions, err := h.functionsService.FindAll()
+	dataSources, err := h.dataSourcesService.FindAll()
 
 	if err != nil {
-		log.Error().Err(err).Str("requestID", requestID).Msg("could not recover the functions")
+		log.Error().Err(err).Str("requestID", requestID).Msg("could not recover the dataSources")
 		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	res := responses.NewFunctions(functions)
+	res := responses.NewDataSources(dataSources)
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
@@ -82,19 +82,19 @@ func (h Functions) Index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h Functions) Get(w http.ResponseWriter, r *http.Request) {
+func (h DataSources) Get(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
 
-	function, err := h.functionsService.FindOneByID(id)
+	dataSource, err := h.dataSourcesService.FindOneByID(id)
 
 	if err != nil {
-		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not recover function with given id")
+		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not recover dataSource with given id")
 		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	res := responses.NewFunction(function)
+	res := responses.NewDataSource(dataSource)
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
@@ -103,8 +103,8 @@ func (h Functions) Get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h Functions) Update(w http.ResponseWriter, r *http.Request) {
-	var req requests.UpdateFunction
+func (h DataSources) Update(w http.ResponseWriter, r *http.Request) {
+	var req requests.UpdateDataSource
 
 	id := chi.URLParam(r, "id")
 	requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
@@ -122,15 +122,15 @@ func (h Functions) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	function, err := h.functionsService.UpdateOneByID(id, req.ToEntity())
+	dataSource, err := h.dataSourcesService.UpdateOneByID(id, req.ToEntity())
 
 	if err != nil {
-		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not update the function with the given id")
+		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not update the dataSource with the given id")
 		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	res := responses.NewFunction(function)
+	res := responses.NewDataSource(dataSource)
 
 	if err = json.NewEncoder(w).Encode(&res); err != nil {
 		log.Error().Err(err).Str("requestID", requestID).Msg("could not encode response to json format")
@@ -139,29 +139,29 @@ func (h Functions) Update(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h Functions) Delete(w http.ResponseWriter, r *http.Request) {
+func (h DataSources) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
 
-	if err := h.functionsService.DeleteOneByID(id); err != nil {
-		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not delete the function with the given id")
+	if err := h.dataSourcesService.DeleteOneByID(id); err != nil {
+		log.Error().Err(err).Str("requestID", requestID).Str("id", id).Msg("could not delete the dataSource with the given id")
 		utils.SendErrorResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-func (h Functions) NotifyStatusChange(w http.ResponseWriter, r *http.Request) {
+func (h DataSources) NotifyHealthStatusChange(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
 	for {
 		select {
-		case function := <-h.fnStatusChangeChan:
-			log.Debug().Str("id", function.ID).Str("status", function.Status).Msg("new function status update event")
+		case dataSource := <-h.dataSourceStatusChangeChan:
+			log.Debug().Str("id", dataSource.ID).Str("status", dataSource.HealthStatus).Msg("new data source health status update event")
 
-			fmt.Fprintf(w, "event: function.%s.status\n", function.ID)
-			fmt.Fprintf(w, "data: %s\n\n", function.Status)
+			fmt.Fprintf(w, "event: dataSource.%s.healthStatus\n", dataSource.ID)
+			fmt.Fprintf(w, "data: %s\n\n", dataSource.HealthStatus)
 			w.(http.Flusher).Flush()
 		}
 	}

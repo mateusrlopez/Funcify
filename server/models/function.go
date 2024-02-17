@@ -29,9 +29,11 @@ type Function struct {
 	SourceCode                   string                 `gorm:"column:source_code;not null"`
 	MethodToExecute              string                 `gorm:"column:method_to_execute;not null"`
 	Status                       string                 `gorm:"column:status;type:varchar(8);not null"`
-	InputConnectorType           string                 `gorm:"column:input_connector_type;type:varchar(8);not null"`
+	InputConnectorDataSourceID   string                 `gorm:"column:input_connector_data_source_id;type:char(36);not null"`
+	InputConnectorDataSource     DataSource             `gorm:"foreignKey:InputConnectorDataSourceID;references:ID"`
 	InputConnectorConfiguration  ConnectorConfiguration `gorm:"column:input_connector_configuration;not null;type:json"`
-	OutputConnectorType          string                 `gorm:"column:output_connector_type;type:varchar(8);not null"`
+	OutputConnectorDataSourceID  string                 `gorm:"column:output_connector_data_source_id;type:char(36);not null"`
+	OutputConnectorDataSource    DataSource             `gorm:"foreignKey:OutputConnectorDataSourceID;references:ID"`
 	OutputConnectorConfiguration ConnectorConfiguration `gorm:"column:output_connector_configuration;not null;type:json"`
 	CreatedAt                    time.Time              `gorm:"column:created_at;type:timestamp;not null"`
 	UpdatedAt                    *time.Time             `gorm:"column:updated_at;type:timestamp"`
@@ -44,9 +46,9 @@ func NewFunction(entity entities.Function) Function {
 		SourceCode:                   entity.SourceCode,
 		MethodToExecute:              entity.MethodToExecute,
 		Status:                       entity.Status,
-		InputConnectorType:           entity.InputConnectorType,
+		InputConnectorDataSourceID:   entity.InputConnectorDataSourceID,
 		InputConnectorConfiguration:  entity.InputConnectorConfiguration,
-		OutputConnectorType:          entity.OutputConnectorType,
+		OutputConnectorDataSourceID:  entity.OutputConnectorDataSourceID,
 		OutputConnectorConfiguration: entity.OutputConnectorConfiguration,
 		CreatedAt:                    entity.CreatedAt,
 		UpdatedAt:                    entity.UpdatedAt,
@@ -60,9 +62,9 @@ func (f *Function) ToEntity() entities.Function {
 		SourceCode:                   f.SourceCode,
 		MethodToExecute:              f.MethodToExecute,
 		Status:                       f.Status,
-		InputConnectorType:           f.InputConnectorType,
+		InputConnectorDataSourceID:   f.InputConnectorDataSourceID,
 		InputConnectorConfiguration:  f.InputConnectorConfiguration,
-		OutputConnectorType:          f.OutputConnectorType,
+		OutputConnectorDataSourceID:  f.OutputConnectorDataSourceID,
 		OutputConnectorConfiguration: f.OutputConnectorConfiguration,
 		CreatedAt:                    f.CreatedAt,
 		UpdatedAt:                    f.UpdatedAt,
@@ -75,6 +77,6 @@ func (Function) TableName() string {
 
 func (f *Function) BeforeCreate(tx *gorm.DB) error {
 	f.ID = utils.GenerateUUID()
-	f.Status = entities.CreatingStatus
+	f.Status = entities.CreatingFunctionStatus
 	return nil
 }

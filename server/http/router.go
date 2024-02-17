@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func NewRouter(authHandler handlers.Auth, functionsHandler handlers.Functions, setupHandler handlers.Setup, usersHandler handlers.Users, allowSetupMiddleware middlewares.AllowSetup, authCookieMiddleware middlewares.AuthCookie) http.Handler {
+func NewRouter(authHandler handlers.Auth, dataSourcesHandler handlers.DataSources, functionsHandler handlers.Functions, setupHandler handlers.Setup, usersHandler handlers.Users, allowSetupMiddleware middlewares.AllowSetup, authCookieMiddleware middlewares.AuthCookie) http.Handler {
 	router := chi.NewRouter()
 
 	router.Use(chimiddlewares.RequestID)
@@ -64,6 +64,20 @@ func NewRouter(authHandler handlers.Auth, functionsHandler handlers.Functions, s
 					r.Use(middlewares.Admin)
 
 					r.Delete("/{id}", functionsHandler.Delete)
+				})
+			})
+
+			r.Route("/data-sources", func(r chi.Router) {
+				r.Post("/", dataSourcesHandler.Create)
+				r.Get("/", dataSourcesHandler.Index)
+				r.Get("/{id}", dataSourcesHandler.Get)
+				r.Put("/{id}", dataSourcesHandler.Update)
+				r.Get("/notify-status-change", dataSourcesHandler.NotifyHealthStatusChange)
+
+				r.Group(func(r chi.Router) {
+					r.Use(middlewares.Admin)
+
+					r.Delete("/{id}", dataSourcesHandler.Delete)
 				})
 			})
 		})
