@@ -33,6 +33,7 @@
     "@radix-ui/react-toggle": "^1.0.3",
     "@radix-ui/react-toggle-group": "^1.0.4",
     "@radix-ui/react-tooltip": "^1.0.5",
+    "@tanstack/react-query": "^5.21.4",
     "@uiw/codemirror-extensions-basic-setup": "^4.21.8",
     "@uiw/codemirror-theme-abcdef": "^4.21.9",
     "@uiw/codemirror-theme-androidstudio": "^4.21.9",
@@ -51,6 +52,7 @@
     "@uiw/react-codemirror": "^4.21.8",
     "@uiw/react-json-view": "^1.8.3",
     "antd": "^5.12.5",
+    "axios": "^1.6.7",
     "codemirror": "^6.0.1",
     "date-fns": "^3.0.6",
     "next": "14.1.0",
@@ -63,6 +65,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^5.20.1",
+    "@tanstack/react-query-devtools": "^5.21.5",
     "@types/antd": "^1.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
