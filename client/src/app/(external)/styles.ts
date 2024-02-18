@@ -1,6 +1,5 @@
 "use client";
 
-import { hexToRgba } from "@/app/_utils/hexToRGBA";
 import Link from "next/link";
 import styled, { css } from "styled-components";
 
@@ -19,7 +18,7 @@ export const StatusPanel = styled.main`
     width: 800px;
     height: 120px;
     background: ${({ theme }) => theme.colors.gray10};
-    border-bottom: 7px solid ${({ theme }) => theme.colors.lighterCyan};
+    border-bottom: 7px solid ${({ theme }) => theme.colors.darkestGray};
     box-shadow: 0 0 20px ${({ theme }) => theme.colors.gray30};
     padding: 20px;
     display: flex;
@@ -38,9 +37,9 @@ export const Tag = styled.span`
         width: max-content;
         display: block;
         padding: 5px 10px;
-        border: 1px solid ${theme.colors.lighterCyan};
-        background: ${hexToRgba(theme.colors.lighterCyan, 20)};
-        color: ${theme.colors.darkestCyan};
+        border: 1px solid ${theme.colors.black};
+        background: ${theme.colors.darkestGray};
+        color: ${theme.colors.gray10};
         font-size: ${theme.fontSize.sm};
         font-weight: ${theme.fontWeight.semibold};
         font-family: ${theme.fontFamily.inter};
@@ -72,13 +71,13 @@ export const LinkToLogin = styled(Link)`
         font-size: ${theme.fontSize.sm};
         font-weight: ${theme.fontWeight.regular};
         font-family: ${theme.fontFamily.inter};
-        color: ${theme.colors.lighterCyan};
+        color: ${theme.colors.gray90};
         margin-top: 20px;
         text-align: center;
         cursor: pointer;
 
         &:hover {
-            color: ${theme.colors.darkestCyan};
+            color: ${theme.colors.darkestGray};
         }
     `};
 `;

@@ -1,15 +1,20 @@
-import { Connector } from "@/app/(internal)/app/functions/connector";
-import { Sidebar } from "@/app/(internal)/app/functions/sidebar";
+import { Footer } from "@/app/(internal)/app/functions/Footer";
 import { ReactNode } from "react";
 
-import { Root } from "./page.styles";
+import { CodeEditor } from "./CodeEditor";
+import { DataSources } from "./DataSources";
+import { Root } from "./Page.styles";
+import { Sidebar } from "./Sidebar";
 
-const Functions = (): ReactNode => (
-    <Root>
-        <Sidebar />
-        <div />
-        <Connector />
-    </Root>
+const Page = (): ReactNode => (
+    <>
+        <Root>
+            <Sidebar />
+            <CodeEditor />
+            <DataSources />
+        </Root>
+        <Footer />
+    </>
 );
 
-export default Functions;
+export default Page;
