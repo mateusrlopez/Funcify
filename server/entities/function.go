@@ -3,14 +3,9 @@ package entities
 import "time"
 
 const (
-	MqttConnector  = "MQTT"
-	RedisConnector = "REDIS"
-)
-
-const (
-	CreatingStatus = "CREATING"
-	RunningStatus  = "RUNNING"
-	ErrorStatus    = "ERROR"
+	CreatingFunctionStatus = "CREATING"
+	RunningFunctionStatus  = "RUNNING"
+	ErrorFunctionStatus    = "ERROR"
 )
 
 type Function struct {
@@ -19,9 +14,9 @@ type Function struct {
 	SourceCode                   string
 	MethodToExecute              string
 	Status                       string
-	InputConnectorType           string
+	InputConnectorDataSourceID   string
 	InputConnectorConfiguration  map[string]interface{}
-	OutputConnectorType          string
+	OutputConnectorDataSourceID  string
 	OutputConnectorConfiguration map[string]interface{}
 	CreatedAt                    time.Time
 	UpdatedAt                    *time.Time

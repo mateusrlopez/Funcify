@@ -12,5 +12,5 @@ func GenerateSessionID() (string, error) {
 		return "", err
 	}
 
-	return hex.EncodeToString(bytes), nil
+	return hex.EncodeToString(bytes)[:20], nil
 }

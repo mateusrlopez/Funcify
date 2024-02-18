@@ -2,6 +2,7 @@ package clients
 
 import (
 	"errors"
+	"github.com/rs/zerolog/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -9,21 +10,23 @@ import (
 	"time"
 )
 
-var (
-	ErrDialectNotImplemented = errors.New("could not instantiate a connection for given dialect")
-)
+var ErrDialectNotImplemented = errors.New("could not instantiate a connection for given dialect")
 
 func NewDatabase(dialect, dsn string, connectionAttempts uint, connectionAttemptInterval time.Duration) (*gorm.DB, error) {
 	var client *gorm.DB
 	var err error
 
+	log.Info().Str("dialect", dialect).Str("dsn", dsn).Uint("attempts", connectionAttempts).Dur("interval", connectionAttemptInterval).Msg("starting attempts to connect to database")
+
 	for attempt := 1; attempt <= int(connectionAttempts); attempt++ {
 		client, err = connectByDialect(dialect, dsn)
 
 		if err == nil {
+			log.Info().Int("attempt", attempt).Str("dialect", dialect).Str("dsn", dsn).Msg("successfully connected to database")
 			break
 		}
 
+		log.Warn().Int("attempt", attempt).Str("dialect", dialect).Str("dsn", dsn).Err(err).Msg("failed attempt to connect to database")
 		time.Sleep(connectionAttemptInterval)
 	}
 

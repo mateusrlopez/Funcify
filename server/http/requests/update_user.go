@@ -11,16 +11,16 @@ type UpdateUser struct {
 	Role  string `json:"role"`
 }
 
-func (req *UpdateUser) ToEntity() entities.User {
+func (req UpdateUser) ToEntity() entities.User {
 	return entities.User{
 		Email: req.Email,
 		Role:  req.Role,
 	}
 }
 
-func (req *UpdateUser) Validate() error {
-	return validation.ValidateStruct(req,
-		validation.Field(req.Email, validation.Required, is.Email),
-		validation.Field(req.Role, validation.Required, validation.In(entities.AdminRole, entities.CommonRole)),
+func (req UpdateUser) Validate() error {
+	return validation.ValidateStruct(&req,
+		validation.Field(&req.Email, validation.Required, is.Email),
+		validation.Field(&req.Role, validation.Required, validation.In(entities.AdminRole, entities.CommonRole)),
 	)
 }

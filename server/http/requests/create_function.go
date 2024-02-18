@@ -2,6 +2,7 @@ package requests
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/mateusrlopez/funcify/entities"
 )
 
@@ -9,32 +10,32 @@ type CreateFunction struct {
 	Name                         string                 `json:"name"`
 	SourceCode                   string                 `json:"sourceCode"`
 	MethodToExecute              string                 `json:"methodToExecute"`
-	InputConnectorType           string                 `json:"inputConnectorType"`
+	InputConnectorDataSourceID   string                 `json:"inputConnectorDataSourceId"`
 	InputConnectorConfiguration  map[string]interface{} `json:"inputConnectorConfiguration"`
-	OutputConnectorType          string                 `json:"outputConnectorType"`
+	OutputConnectorDataSourceID  string                 `json:"outputConnectorDataSourceId"`
 	OutputConnectorConfiguration map[string]interface{} `json:"outputConnectorConfiguration"`
 }
 
-func (req *CreateFunction) ToEntity() entities.Function {
+func (req CreateFunction) ToEntity() entities.Function {
 	return entities.Function{
 		Name:                         req.Name,
 		SourceCode:                   req.SourceCode,
 		MethodToExecute:              req.MethodToExecute,
-		InputConnectorType:           req.InputConnectorType,
+		InputConnectorDataSourceID:   req.InputConnectorDataSourceID,
 		InputConnectorConfiguration:  req.InputConnectorConfiguration,
-		OutputConnectorType:          req.OutputConnectorType,
+		OutputConnectorDataSourceID:  req.OutputConnectorDataSourceID,
 		OutputConnectorConfiguration: req.OutputConnectorConfiguration,
 	}
 }
 
-func (req *CreateFunction) Validate() error {
-	return validation.ValidateStruct(req,
-		validation.Field(req.Name, validation.Required),
-		validation.Field(req.SourceCode, validation.Required),
-		validation.Field(req.MethodToExecute, validation.Required),
-		validation.Field(req.InputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
-		validation.Field(req.InputConnectorConfiguration, validation.Required),
-		validation.Field(req.OutputConnectorType, validation.Required, validation.In(entities.MqttConnector, entities.RedisConnector)),
-		validation.Field(req.OutputConnectorConfiguration, validation.Required),
+func (req CreateFunction) Validate() error {
+	return validation.ValidateStruct(&req,
+		validation.Field(&req.Name, validation.Required),
+		validation.Field(&req.SourceCode, validation.Required),
+		validation.Field(&req.MethodToExecute, validation.Required),
+		validation.Field(&req.InputConnectorDataSourceID, validation.Required, is.UUID),
+		validation.Field(&req.InputConnectorConfiguration, validation.Required),
+		validation.Field(&req.OutputConnectorDataSourceID, validation.Required, is.UUID),
+		validation.Field(&req.OutputConnectorConfiguration, validation.Required),
 	)
 }

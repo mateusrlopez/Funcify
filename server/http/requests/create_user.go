@@ -12,7 +12,7 @@ type CreateUser struct {
 	Role     string `json:"role"`
 }
 
-func (req *CreateUser) ToEntity() entities.User {
+func (req CreateUser) ToEntity() entities.User {
 	return entities.User{
 		Email:    req.Email,
 		Password: req.Password,
@@ -20,10 +20,10 @@ func (req *CreateUser) ToEntity() entities.User {
 	}
 }
 
-func (req *CreateUser) Validate() error {
-	return validation.ValidateStruct(req,
-		validation.Field(req.Email, validation.Required, is.Email),
-		validation.Field(req.Password, validation.Required, validation.Min(8)),
-		validation.Field(req.Role, validation.Required, validation.In(entities.AdminRole, entities.CommonRole)),
+func (req CreateUser) Validate() error {
+	return validation.ValidateStruct(&req,
+		validation.Field(&req.Email, validation.Required, is.Email),
+		validation.Field(&req.Password, validation.Required),
+		validation.Field(&req.Role, validation.Required, validation.In(entities.AdminRole, entities.CommonRole)),
 	)
 }

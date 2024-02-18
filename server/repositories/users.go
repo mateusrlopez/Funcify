@@ -12,6 +12,7 @@ type Users interface {
 	FindAll() ([]entities.User, error)
 	FindOneByEmail(email string) (entities.User, error)
 	FindOneByID(id string) (entities.User, error)
+	ExistsOne() error
 	UpdateOne(user, data entities.User) (entities.User, error)
 	DeleteOne(user entities.User) error
 }
@@ -23,6 +24,7 @@ type usersImplementation struct {
 var (
 	ErrUserIDNotFound    = errors.New("could not find user with the given id")
 	ErrUserEmailNotFound = errors.New("could not find user with the given email")
+	ErrNoUsers           = errors.New("could not find any user")
 )
 
 func NewUsers(database *gorm.DB) Users {
@@ -80,6 +82,17 @@ func (r usersImplementation) FindOneByID(id string) (entities.User, error) {
 	}
 
 	return model.ToEntity(), nil
+}
+
+func (r usersImplementation) ExistsOne() error {
+	if err := r.database.First(&models.User{}).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNoUsers
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (r usersImplementation) UpdateOne(user, data entities.User) (entities.User, error) {
