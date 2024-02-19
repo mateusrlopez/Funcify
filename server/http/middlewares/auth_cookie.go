@@ -2,7 +2,10 @@ package middlewares
 
 import (
 	"context"
+	chimiddlewares "github.com/go-chi/chi/v5/middleware"
 	"github.com/mateusrlopez/funcify/services"
+	"github.com/mateusrlopez/funcify/utils"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -12,13 +15,13 @@ type AuthCookie struct {
 }
 
 type RoleKey string
-type SessionIdKey string
-type UserIdKey string
+type SessionIDKey string
+type UserIDKey string
 
 const (
 	RK RoleKey      = "role"
-	SK SessionIdKey = "sessionID"
-	UK UserIdKey    = "userID"
+	SK SessionIDKey = "sessionID"
+	UK UserIDKey    = "userID"
 )
 
 func NewAuthCookie(sessionsService services.Sessions, usersService services.Users) AuthCookie {
@@ -30,24 +33,28 @@ func NewAuthCookie(sessionsService services.Sessions, usersService services.User
 
 func (m AuthCookie) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestID := r.Context().Value(chimiddlewares.RequestIDKey).(string)
 		cookie, err := r.Cookie("session")
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Error().Err(err).Str("requestID", requestID).Msg("could not retrieve the auth cookie")
+			utils.SendErrorResponse(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		session, err := m.sessionsService.FindByID(cookie.Value)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			log.Error().Err(err).Str("requestID", requestID).Str("sessionID", cookie.Value).Msg("could not retrieve the session with the given id")
+			utils.SendErrorResponse(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		user, err := m.usersService.FindOneByID(session.UserID)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			log.Error().Err(err).Str("requestID", requestID).Str("userID", session.UserID).Msg("could not retrieve the user related to the retrieved session")
+			utils.SendErrorResponse(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 

@@ -14,8 +14,6 @@ export const CoreTheme = {
         gray100: "#60646C",
         darkestGray: "#1C2024",
         black: "#000",
-        lighterCyan: "#0797B9",
-        darkestCyan: "#107D98",
         lighterRed: "#E54D2E",
         darkestRed: "#D13415",
     },

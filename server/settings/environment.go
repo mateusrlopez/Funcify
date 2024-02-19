@@ -15,4 +15,6 @@ type Environment struct {
 		ConnectionAttempts        uint          `default:"3" split_words:"true"`
 		ConnectionAttemptInterval time.Duration `default:"1s" split_words:"true"`
 	}
+
+	LogLevel string `default:"INFO" split_words:"true"`
 }

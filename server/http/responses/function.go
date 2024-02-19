@@ -8,9 +8,9 @@ type Function struct {
 	SourceCode                   string                 `json:"sourceCode"`
 	MethodToExecute              string                 `json:"methodToExecute"`
 	Status                       string                 `json:"status"`
-	InputConnectorType           string                 `json:"inputConnectorType"`
+	InputConnectorDataSourceID   string                 `json:"inputConnectorDataSourceId"`
 	InputConnectorConfiguration  map[string]interface{} `json:"inputConnectorConfiguration"`
-	OutputConnectorType          string                 `json:"outputConnectorType"`
+	OutputConnectorDataSourceID  string                 `json:"outputConnectorDataSourceId"`
 	OutputConnectorConfiguration map[string]interface{} `json:"outputConnectorConfiguration"`
 }
 
@@ -21,9 +21,9 @@ func NewFunction(function entities.Function) Function {
 		SourceCode:                   function.SourceCode,
 		MethodToExecute:              function.MethodToExecute,
 		Status:                       function.Status,
-		InputConnectorType:           function.InputConnectorType,
+		InputConnectorDataSourceID:   function.InputConnectorDataSourceID,
 		InputConnectorConfiguration:  function.InputConnectorConfiguration,
-		OutputConnectorType:          function.OutputConnectorType,
+		OutputConnectorDataSourceID:  function.OutputConnectorDataSourceID,
 		OutputConnectorConfiguration: function.OutputConnectorConfiguration,
 	}
 }

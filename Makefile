@@ -2,7 +2,7 @@ include .env
 export
 
 run-server:
-	go run server/main.go
+	cd server; go run main.go
 
 test-server:
 	go test -v server/.../.
