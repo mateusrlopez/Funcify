@@ -1,61 +1,76 @@
 # Quick Start: Development
 
-Introduction
+This document provides a quick start guide for development.
 
 ## Server
 
-Server instructions
+To run the server locally, follow the steps below:
 
-### Environment Variables
+1. Ensure that you're in the `root` directory
 
-To run this project, you'll need to add the following environment variables to your .env file
+2. Define the environment variables on the `.env` file present in the root directory
 
-| Parameter                    | Description                             |
-|:-----------------------------|:----------------------------------------|
-| `ENVIRONMENT`                | `example1` or `example2` (**Required**) |
+| Parameter                      | Description                                                             |
+|:-------------------------------|:------------------------------------------------------------------------|
+| `DATABASE_DIALECT`             | `postgres` or `mysql` (**Required**)                                    |
+| `DATABASE_DSN`                 | Connection string                                                       |
+| `DATABASE_CONNECTION_ATTEMPTS` | Number of attempts to connect to the database                           |
+| `DATABASE_CONNECTION_INTERVAL` | Interval between connection attempts                                    |
+| `SERVER_PORT`                  | Port to run the server                                                  |
+| `SERVER_READ_TIMEOUT`          | Server read timeout                                                     |
+| `SERVER_WRITE_TIMEOUT`         | Server write timeout                                                    |
+| `LOG_LEVEL`                    | `DEBUG` or `PANIC` or `FATAL` or `ERROR` or `WARN` or `INFO` or `TRACE` |                                      |
 
-### Run Locally
-
-Instructions about how to run the server
+3. Create infrastructure resources on `Docker`
 
 ```shell
-command
+make compose-up-v1
+
+# OR
+
+make compose-up-v2
+```
+
+4. Start the server
+
+```shell
+make run-server
+```
+
+5. If you need to down the infrastructure resources
+
+```shell
+make compose-down-v1
+
+# OR
+
+make compose-down-v2
 ```
 
 ---
 
 ## Client
 
-Client instructions
-
-### Environments Variables
-
-| Parameter                    | Description                             |
-|:-----------------------------|:----------------------------------------|
-| `ENVIRONMENT`                | `example1` or `example2` (**Required**) |
-
-### Run Locally
+To run the client locally, follow the steps below:
 
 Instructions about how to run the client
 
-1. Ensure that you're in the client directory
+1. Ensure that you're in the `root` directory
+
+2. Prepare the environment
 
 ```shell
-cd client
-```
-
-2. Install dependencies
-
-```shell
-npm install
-
-# or
-
-npm i
+make prepare-client
 ```
 
 3. Start the project
 
 ```shell
-npm run start:dev
+make run-client-dev
+```
+
+4. If you need to see the production build, run the command below
+
+```shell
+make run-client-prod
 ```

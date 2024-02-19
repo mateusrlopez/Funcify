@@ -1,7 +1,7 @@
 include .env
 export
 
-run:
+run-server:
 	go run server/main.go
 
 test-server:
@@ -21,3 +21,12 @@ compose-down-v2:
 
 docker-clean-all:
 	docker system prune --volumes
+
+prepare-client:
+	cd client && npm install
+
+run-client-dev:
+	cd client && npm run start:dev
+
+run-client-prod:
+	cd client && npm run build && npm run start:prod
