@@ -1,5 +1,63 @@
 # API Reference
 
+## Setup (Onboarding)
+
+The setup is the first step to start using the platform. It creates the first user and sets up the platform.
+
+### Do
+
+```http request
+POST /api/v1/setup
+```
+
+#### Request: Body
+
+| Body       | Type     | Description                  |
+|:-----------|:---------|:-----------------------------|
+| `email`    | `string` | User e-mail (**Required**)   |
+| `password` | `string` | User password (**Required**) |
+
+#### Request: Example
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "abc123"
+}
+```
+
+#### Response
+
+No response body
+
+<br>
+
+---
+
+### Is Done?
+
+It checks if the setup was done
+
+```http request
+GET /api/v1/setup
+```
+
+#### Request
+
+No request body or parameters
+
+#### Response
+
+```json
+{
+  "done": "true | false"
+}
+```
+
+<br>
+
+---
+
 ## Authentication
 
 The authentication is done based on a `sessionID` token (cookies). The `sessionID` token is generated when the user signs in and is invalidated when the user signs out.
@@ -118,9 +176,9 @@ PUT /api/v1/users/:id
 
 #### Request: Body
 
-| Body    | Type     | Description                       |
-|:--------|:---------|:----------------------------------|
-| `email` | `string` | User e-mail (**Required**)        |
+| Body    | Type     | Description                        |
+|:--------|:---------|:-----------------------------------|
+| `email` | `string` | User e-mail (**Required**)         |
 | `role`  | `string` | `ADMIN` or `COMMON` (**Required**) |
 
 #### Request: Example
@@ -147,7 +205,7 @@ PUT /api/v1/users/:id
 
 ---
 
-### Get User
+### Get Users
 
 It gets the list of users
 
@@ -255,6 +313,33 @@ No response body
 
 ---
 
+### My Profile
+
+It gets the profile of the current user
+
+```http request
+GET /api/v1/users/me
+```
+
+#### Request
+
+No request body or parameters
+
+#### Response
+
+```json
+{
+  "id": "string",
+  "email": "string",
+  "role": "ADMIN | COMMON",
+  "createdAt": "string"
+}
+```
+
+<br>
+
+---
+
 ## Functions
 
 A function is a piece of code that can be executed by the platform. It can be triggered by an event incoming from an input connector and can send an event to an output datasource.
@@ -288,10 +373,6 @@ POST /api/v1/functions
   "methodToExecute": "main",
   "inputConnectorType": "REDIS",
   "inputConnectorConfiguration": {
-    "address": "string",
-    "username": "string",
-    "password": "string",
-    "database": "string",
     "channel": "string"
   },
   "outputConnectorType": "",
@@ -306,11 +387,11 @@ POST /api/v1/functions
   "id": "string",
   "name": "string",
   "sourceCode": "string",
-  "methodToExecute": "REDIS | MQTT",
+  "methodToExecute": "string",
   "status": "CREATING | RUNNING | ERROR",
-  "inputConnectorType": "string",
+  "inputConnectorType": "REDIS | MQTT",
   "inputConnectorConfiguration": {},
-  "outputConnectorType": "string",
+  "outputConnectorType": "REDIS | MQTT",
   "outputConnectorConfiguration": {}
 }
 ```
@@ -354,9 +435,7 @@ PUT /api/v1/functions/:id
   "methodToExecute": "main",
   "inputConnectorType": "MQTT",
   "inputConnectorConfiguration": {
-    "broker": "string",
-    "topic": "string",
-    "qos": "string"
+    "topic": "string"
   },
   "outputConnectorType": "",
   "outputConnectorConfiguration": {}
@@ -370,11 +449,11 @@ PUT /api/v1/functions/:id
   "id": "string",
   "name": "string",
   "sourceCode": "string",
-  "methodToExecute": "REDIS | MQTT",
+  "methodToExecute": "string",
   "status": "CREATING | RUNNING | ERROR",
-  "inputConnectorType": "string",
+  "inputConnectorType": "REDIS | MQTT",
   "inputConnectorConfiguration": {},
-  "outputConnectorType": "string",
+  "outputConnectorType": "REDIS | MQTT",
   "outputConnectorConfiguration": {}
 }
 ```
@@ -404,11 +483,11 @@ No request body or parameters
       "id": "string",
       "name": "string",
       "sourceCode": "string",
-      "methodToExecute": "REDIS | MQTT",
+      "methodToExecute": "string",
       "status": "CREATING | RUNNING | ERROR",
-      "inputConnectorType": "string",
+      "inputConnectorType": "REDIS | MQTT",
       "inputConnectorConfiguration": {},
-      "outputConnectorType": "string",
+      "outputConnectorType": "REDIS | MQTT",
       "outputConnectorConfiguration": {}
     }
   ]
@@ -440,11 +519,11 @@ GET /api/v1/functions/:id
   "id": "string",
   "name": "string",
   "sourceCode": "string",
-  "methodToExecute": "REDIS | MQTT",
+  "methodToExecute": "string",
   "status": "CREATING | RUNNING | ERROR",
-  "inputConnectorType": "string",
+  "inputConnectorType": "REDIS | MQTT",
   "inputConnectorConfiguration": {},
-  "outputConnectorType": "string",
+  "outputConnectorType": "REDIS | MQTT",
   "outputConnectorConfiguration": {}
 }
 ```
@@ -477,4 +556,166 @@ No response body
 
 ### Notify Status Change
 
-TODO
+Server Sent Event (SSE) to notify the status change of all functions
+
+```http request
+GET /api/v1/functions/notify-status-change
+```
+
+#### Request
+
+No request body or parameters
+
+#### Response
+
+```json
+{
+  "id": "string",
+  "status": "CREATING | RUNNING | ERROR"
+}
+```
+
+<br>
+
+---
+
+## Data Sources
+
+A data source is a configuration to connect to a specific data source. It can be a Redis, MQTT, or any other data source.
+
+### Create Data Source
+
+It creates a new data source
+
+```http request
+POST /api/v1/data-sources
+```
+
+#### Request: Body
+
+| Body            | Type     | Description                                |
+|:----------------|:---------|:-------------------------------------------|
+| `name`          | `string` | Data source name (**Required**)            |
+| `type`          | `string` | `REDIS` or `MQTT` (**Required**)           |
+| `configuration` | `object` | Redis or MQTT configuration (**Required**) |
+
+#### Request: Example of Redis Data Source
+
+```json
+{
+  "name": "data_source_name",
+  "type": "REDIS",
+  "configuration": {
+    "address": "string",
+    "username": "string",
+    "password": "string",
+    "database": 0
+  }
+}
+```
+
+#### Request: Example of MQTT Data Source
+
+```json
+{
+  "name": "data_source_name",
+  "type": "MQTT",
+  "configuration": {
+    "broker": "string",
+    "qos": "string"
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "id": "string",
+  "name": "string",
+  "type": "REDIS | MQTT",
+  "configuration": {}
+}
+```
+
+<br>
+
+---
+
+### Get Data Sources
+
+It gets the list of data sources
+
+```http request
+GET /api/v1/data-sources
+```
+
+#### Request
+
+No request body or parameters
+
+#### Response
+
+```json
+{
+  "dataSources": [
+    {
+      "id": "string",
+      "name": "string",
+      "type": "REDIS | MQTT",
+      "configuration": {}
+    }
+  ]
+}
+```
+
+<br>
+
+---
+
+### Get Specific Data Source
+
+It gets a specific data source by ID
+
+```http request
+GET /api/v1/data-sources/:id
+```
+
+#### Request: Parameters
+
+| Parameter | Type     | Description                  |
+|:----------|:---------|:-----------------------------|
+| `id`      | `string` | Data Source ID (**Required**) |
+
+#### Response
+
+```json
+{
+  "id": "string",
+  "name": "string",
+  "type": "REDIS | MQTT",
+  "configuration": {}
+}
+```
+
+<br>
+
+---
+
+### Delete Data Source
+
+It deletes a specific data source by ID
+
+```http request
+DELETE /api/v1/data-sources/:id
+```
+
+#### Request: Parameters
+
+| Parameter | Type     | Description                  |
+|:----------|:---------|:-----------------------------|
+| `id`      | `string` | Data Source ID (**Required**) |
+
+#### Response
+
+No response body
