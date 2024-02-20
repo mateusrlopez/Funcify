@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: "Description Login Page",
 };
 
-const Layout = ({ children }: PropsWithChildren): ReactNode => {
+export default function Layout({ children }: PropsWithChildren): ReactNode {
     return (
         <Root>
             {children}
@@ -25,6 +25,4 @@ const Layout = ({ children }: PropsWithChildren): ReactNode => {
             </Creators>
         </Root>
     );
-};
-
-export default Layout;
+}

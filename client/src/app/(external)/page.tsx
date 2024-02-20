@@ -2,7 +2,7 @@ import { Root, StatusPanel, Tag, Text, LinkToLogin, Creators } from "@/app/(exte
 import Link from "next/link";
 import { ReactNode } from "react";
 
-const Home = (): ReactNode => {
+export default function Home(): ReactNode {
     const now = new Date().toLocaleDateString("en-US", {
         weekday: "short",
         day: "numeric",
@@ -44,6 +44,4 @@ const Home = (): ReactNode => {
             </Creators>
         </Root>
     );
-};
-
-export default Home;
+}
