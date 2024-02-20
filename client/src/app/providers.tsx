@@ -1,14 +1,22 @@
 "use client";
 
+import { queryClient } from "@/lib/query-client";
 import StyledComponentsRegistry from "@/lib/registry";
 import { CoreTheme } from "@/theme/core";
-import { PropsWithChildren, ReactNode } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactNode } from "react";
 import { ThemeProvider } from "styled-components";
 
-const Providers = ({ children }: PropsWithChildren): ReactNode => {
+const Providers = ({ children }: { children: ReactNode }): ReactNode => {
     return (
         <StyledComponentsRegistry>
-            <ThemeProvider theme={CoreTheme}>{children}</ThemeProvider>
+            <ThemeProvider theme={CoreTheme}>
+                <QueryClientProvider client={queryClient}>
+                    <ReactQueryDevtools initialIsOpen={false} />
+                    {children}
+                </QueryClientProvider>
+            </ThemeProvider>
         </StyledComponentsRegistry>
     );
 };

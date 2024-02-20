@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/Button";
 import { ReactNode, Suspense } from "react";
 import { FaCode } from "react-icons/fa";
