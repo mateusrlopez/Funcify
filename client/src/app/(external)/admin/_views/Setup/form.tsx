@@ -3,8 +3,10 @@
 import { ErrorMessage, StyledForm } from "@/app/(external)/admin/styles";
 import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
+import { Toast } from "@/components/Toast";
+import { setup } from "@/repository/setupRepository";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { BiError } from "react-icons/bi";
 import { BsRocketTakeoff } from "react-icons/bs";
@@ -12,10 +14,7 @@ import { z } from "zod";
 
 const setupSchema = z
     .object({
-        name: z.string().min(1, {
-            message: "Name is required",
-        }),
-        email: z.string().email(),
+        email: z.string().email().min(1, { message: "E-mail is required" }),
         password: z.string().min(8, {
             message: "The password must contain at least 8 character(s)",
         }),
@@ -44,28 +43,27 @@ const Form = (): ReactNode => {
         resolver: zodResolver(setupSchema),
     });
 
-    const onHandleSubmit: SubmitHandler<SetupSchema> = async data => console.log(data);
+    const toastRef = useRef<{ publish: () => void }>();
+
+    const onHandleSubmit: SubmitHandler<SetupSchema> = async data => {
+        try {
+            const { email, password } = data;
+            await setup(email, password);
+        } catch {
+            if (toastRef.current) toastRef.current.publish();
+        }
+    };
 
     return (
         <StyledForm onSubmit={handleSubmit(onHandleSubmit)}>
-            <>
-                <Input>
-                    <Input.Label fieldId="name">Name</Input.Label>
-                    <Input.Field
-                        $tag="input"
-                        id="name"
-                        type="text"
-                        max={64}
-                        {...register("name")}
-                    />
-                </Input>
-                {errors.name && errors.name.message && (
-                    <ErrorMessage>
-                        <BiError size={13} />
-                        {errors.name.message}
-                    </ErrorMessage>
-                )}
-            </>
+            <Toast>
+                <Toast.Content ref={toastRef} variant="error">
+                    <Toast.Title>An unexpected error occurred</Toast.Title>
+                    <Toast.Description>
+                        Check your environment logs to understand the problem
+                    </Toast.Description>
+                </Toast.Content>
+            </Toast>
 
             <>
                 <Input>

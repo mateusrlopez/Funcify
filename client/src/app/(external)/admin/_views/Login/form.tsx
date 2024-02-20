@@ -10,14 +10,17 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const loginSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(8),
+    email: z.string().email({ message: "Invalid email" }),
+    password: z.string().min(1, { message: "Password is required" }),
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;
 
 const Form = (): ReactNode => {
-    const { register, handleSubmit } = useForm<LoginSchema>({
+    const {
+        register,
+        handleSubmit
+    } = useForm<LoginSchema>({
         resolver: zodResolver(loginSchema),
     });
 
