@@ -5,10 +5,16 @@ import styled, { css, keyframes } from "styled-components";
 const DiamondLoader = keyframes`
     0%  ,10% {
         transform: translate(-45px , -45px) rotate(-45deg)
-}
-    90% , 100% {
+    }
+    40% , 50% {
         transform: translate(0px , 0px) rotate(-45deg)
-}
+    }
+    50% , 60% {
+        transform: translate(0px , 0px) rotate(-45deg)
+    }
+    90%  ,100% {
+        transform: translate(-45px , -45px) rotate(-45deg)
+    }
 `;
 
 export const Loader = styled.span`
@@ -34,7 +40,7 @@ export const Loader = styled.span`
             inset: -15px;
             margin: auto;
             background: ${theme.colors.darkestGray};
-            animation: ${DiamondLoader} 1.2s linear infinite;
+            animation: ${DiamondLoader} 2s linear infinite;
         }
     `}
 `;

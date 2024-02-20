@@ -10,7 +10,7 @@ export default async function Page() {
     });
 
     const setupIsDone = await new Promise(resolve => {
-        resolve(false);
+        resolve(true);
     });
 
     return (

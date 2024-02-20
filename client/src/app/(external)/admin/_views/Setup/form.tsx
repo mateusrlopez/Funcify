@@ -43,7 +43,7 @@ const Form = (): ReactNode => {
         resolver: zodResolver(setupSchema),
     });
 
-    const toastRef = useRef<{ publish: () => void }>();
+    const toastRef = useRef<ToastRefType>();
 
     const onHandleSubmit: SubmitHandler<SetupSchema> = async data => {
         try {
