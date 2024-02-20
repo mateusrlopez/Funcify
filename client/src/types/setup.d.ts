@@ -1,0 +1,3 @@
+type SetupIsDoneResponse = {
+    done: boolean;
+};

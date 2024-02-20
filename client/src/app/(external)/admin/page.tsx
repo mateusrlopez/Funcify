@@ -1,18 +1,24 @@
-import { ResetPassword } from "@/app/(external)/admin/_views/Reset";
-import { ReactNode } from "react";
-
 import { Panel } from "./_components/Panel";
+import { Login } from "./_views/Login";
+import { Setup } from "./_views/Setup";
 
-const Page = (): ReactNode => {
+export default async function Page() {
+    // const { done: setupIsDone }: SetupIsDoneResponse = await verifyIfSetupWasDone();
+
+    await new Promise(resolve => {
+        setTimeout(resolve, 3000);
+    });
+
+    const setupIsDone = await new Promise(resolve => {
+        resolve(true);
+    });
+
     return (
         <Panel>
-            {/* <Login /> */}
-            {/* <Setup /> */}
+            {setupIsDone ? <Login /> : <Setup />}
             {/* <FirstAccess /> */}
             {/* <ForgotPassword /> */}
-            <ResetPassword />
+            {/* <ResetPassword /> */}
         </Panel>
     );
-};
-
-export default Page;
+}
