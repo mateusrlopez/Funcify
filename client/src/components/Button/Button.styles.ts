@@ -22,6 +22,16 @@ export const CommonStyles = css`
         &:focus {
             outline: 1px solid ${theme.colors.black};
         }
+
+        &:disabled {
+            cursor: not-allowed;
+            background: ${theme.colors.gray50};
+            color: ${theme.colors.gray70};
+
+            &:hover {
+                background: ${theme.colors.gray50};
+            }
+        }
     `}
 `;
 

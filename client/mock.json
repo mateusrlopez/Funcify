@@ -1,0 +1,36 @@
+{
+  "functions": {
+    "functions": [
+      {
+        "id": "0b557b0b-1982-4e8a-969c-3b9950f08024",
+        "name": "test-function-redis-1",
+        "sourceCode": "function Execute(data) { return data * 2 }",
+        "methodToExecute": "Execute",
+        "status": "RUNNING",
+        "inputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "inputConnectorConfiguration": {
+          "channel": "input"
+        },
+        "outputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "outputConnectorConfiguration": {
+          "channel": "output"
+        }
+      },
+      {
+        "id": "1b557b1b-1982-4e8a-969c-3b9950f08024",
+        "name": "test-function-redis-2",
+        "sourceCode": "function Execute(data) { return data * 2 }",
+        "methodToExecute": "Execute",
+        "status": "ERROR",
+        "inputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "inputConnectorConfiguration": {
+          "channel": "input"
+        },
+        "outputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "outputConnectorConfiguration": {
+          "channel": "output"
+        }
+      }
+    ]
+  }
+}
