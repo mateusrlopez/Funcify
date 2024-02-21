@@ -1,13 +1,7 @@
-import { Metadata } from "next";
 import Link from "next/link";
 import { PropsWithChildren, ReactNode } from "react";
 
 import { Creators, Root } from "../styles";
-
-export const metadata: Metadata = {
-    title: "ADMIN Page",
-    description: "Description Login Page",
-};
 
 export default function Layout({ children }: PropsWithChildren): ReactNode {
     return (

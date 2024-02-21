@@ -1,6 +1,11 @@
 import { Root, StatusPanel, Tag, Text, LinkToLogin, Creators } from "@/app/(external)/styles";
+import { Metadata } from "next";
 import Link from "next/link";
 import { ReactNode } from "react";
+
+export const metadata: Metadata = {
+    title: "Welcome",
+};
 
 export default function Home(): ReactNode {
     const now = new Date().toLocaleDateString("en-US", {
