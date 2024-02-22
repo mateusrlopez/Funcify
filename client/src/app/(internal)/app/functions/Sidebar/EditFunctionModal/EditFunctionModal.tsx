@@ -1,4 +1,4 @@
-import { Footer } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal.styles";
+import { Footer } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/CreateFunctionModal.styles";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";

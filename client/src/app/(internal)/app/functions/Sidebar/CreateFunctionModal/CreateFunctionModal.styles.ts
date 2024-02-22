@@ -11,7 +11,7 @@ export const Form = styled.form`
 export const Group = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
 `;
 
 export const GroupTitle = styled.h1`
@@ -23,22 +23,10 @@ export const GroupTitle = styled.h1`
     `}
 `;
 
-export const DragNDropArea = styled.div`
-    ${({ theme }) => css`
-        width: 100%;
-        height: 100px;
-        border: 1px dashed ${theme.colors.darkestGray};
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: ${theme.fontSize.sm};
-        font-weight: ${theme.fontWeight.regular};
-        font-family: ${theme.fontFamily.inter};
-        color: ${theme.colors.darkestGray};
-        cursor: pointer;
-        margin-top: 10px;
-    `}
+export const InputContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 `;
 
 export const Footer = styled.div`
@@ -58,6 +46,5 @@ export const ErrorMessage = styled.span`
         font-weight: ${theme.fontWeight.regular};
         font-family: ${theme.fontFamily.inter};
         color: ${theme.colors.lighterRed};
-        margin-top: -20px;
     `}
 `;

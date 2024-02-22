@@ -1,6 +1,5 @@
 "use client";
 
-import { EditFunctionModal } from "@/app/(internal)/app/functions/Sidebar/EditFunctionModal";
 import { ContextMenu } from "@/components/ContextMenu";
 import { CoreTheme } from "@/theme/core";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
@@ -8,7 +7,8 @@ import { ReactNode, useCallback, useState } from "react";
 import { FaRegFileCode } from "react-icons/fa6";
 import { MdFileOpen, MdOutlineOpenInNew, MdEdit, MdDelete } from "react-icons/md";
 
-import { DeleteFunctionModal } from "./DeleteFunctionModal";
+import { DeleteFunctionModal } from "../DeleteFunctionModal";
+import { EditFunctionModal } from "../EditFunctionModal";
 import { Root } from "./FunctionListItem.styles";
 
 const STATUS_COLORS = {
