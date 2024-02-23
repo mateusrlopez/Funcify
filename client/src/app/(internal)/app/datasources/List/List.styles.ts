@@ -1,6 +1,6 @@
 "use client";
 
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 export const Root = styled.ul`
     width: 100%;
@@ -28,4 +28,12 @@ export const Root = styled.ul`
         background: ${({ theme }) => theme.colors.gray60} !important;
         cursor: pointer;
     }
+`;
+
+export const ErrorMessage = styled.h2`
+    ${({ theme }) => css`
+        color: ${theme.colors.darkestGray};
+        font-size: ${theme.fontSize.md};
+        font-weight: ${theme.fontWeight.bold};
+    `};
 `;

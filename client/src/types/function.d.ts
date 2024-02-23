@@ -1,17 +1,3 @@
-type MqttConfiguration = {
-    broker: string;
-    topic: string;
-    qos: number;
-};
-
-type RedisConfiguration = {
-    address: string;
-    username: string;
-    password: string;
-    database: string;
-    channel: string;
-};
-
 type ConnectorConfiguration = MqttConfiguration | RedisConfiguration;
 
 type FunctionSchema<I = ConnectorConfiguration, O = MqttConfiguration> = {

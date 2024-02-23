@@ -32,5 +32,30 @@
         }
       }
     ]
+  },
+  "data-sources": {
+    "dataSources": [
+      {
+        "id": "123",
+        "name": "redis-test",
+        "type": "REDIS",
+        "configuration": {
+          "address": "127.0.0.1:6379",
+          "username": "",
+          "password": "funcify",
+          "database": 0
+        }
+      },
+      {
+        "id": "456",
+        "name": "mqtt-test",
+        "type": "MQTT",
+        "configuration": {
+          "broker": "broker.example.com",
+          "topic": "EXAMPLE/TOPIC/1",
+          "qos": 1
+        }
+      }
+    ]
   }
 }

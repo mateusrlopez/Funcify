@@ -18,11 +18,11 @@ const Links = (): ReactNode => {
                 </Icon>
                 Functions
             </Option>
-            <Option href="/app/connectors" data-selected={path.startsWith("/app/connectors")}>
+            <Option href="/app/datasources" data-selected={path.startsWith("/app/datasources")}>
                 <Icon>
                     <TbCloudDataConnection size={18} />
                 </Icon>
-                Connectors
+                Data Sources
             </Option>
             <Option
                 href="/app/preferences/users"
