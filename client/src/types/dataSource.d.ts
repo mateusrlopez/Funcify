@@ -16,7 +16,7 @@ type DataSourceSchema = {
     id: string;
     name: string;
     type: "MQTT" | "REDIS";
-    configuration: MqttConfiguration | RedisConfiguration;
+    configuration: Omit<MqttConfiguration, "topic"> | Omit<RedisConfiguration, "channel">;
 };
 
 type CreateDataSource = Omit<DataSourceSchema, "id">;

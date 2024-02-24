@@ -7,10 +7,12 @@ import { Select } from "@/components/Select";
 import { Toast } from "@/components/Toast";
 import { createDataSource } from "@/repository/dataSourcesRepository";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { BiError } from "react-icons/bi";
 import { MdSend } from "react-icons/md";
+import shortid from "shortid";
 import { z } from "zod";
 
 import { ErrorMessage, Form, InputContainer, Footer } from "./CreateDataSourceModal.styles";
@@ -38,6 +40,7 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
     } = useForm({
         resolver: zodResolver(dataSourceSchemas[dataSourceType].merge(createDataSourceSchema)),
     });
+    const queryClient = useQueryClient();
 
     useEffect((): void => {
         if (Object.keys(errors).length > 0) {
@@ -46,9 +49,45 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
         }
     }, [errors]);
 
-    const onHandleSubmit: SubmitHandler<DataSourceSchema> = async data => {
+    const { mutateAsync: createDataSourceFn } = useMutation({
+        mutationFn: createDataSource,
+        onSuccess(_, variables) {
+            queryClient.setQueryData(["dataSources"], (data: Array<DataSourceSchema>) => [
+                ...data,
+                {
+                    id: shortid.generate(),
+                    ...variables,
+                },
+            ]);
+        },
+    });
+
+    const onHandleSubmit: SubmitHandler<DataSourceSchema> = async (data: any) => {
         try {
-            await createDataSource(data);
+            if (dataSourceType === "MQTT") {
+                await createDataSourceFn({
+                    name: data.name,
+                    type: "MQTT",
+                    configuration: { broker: data.broker, qos: data.qos } as Omit<
+                        MqttConfiguration,
+                        "topic"
+                    >,
+                });
+            }
+
+            if (dataSourceType === "REDIS") {
+                await createDataSourceFn({
+                    name: data.name,
+                    type: "REDIS",
+                    configuration: {
+                        address: data.address,
+                        username: data.username,
+                        password: data.password,
+                        database: data.database,
+                    } as Omit<RedisConfiguration, "channel">,
+                });
+            }
+
             toastRef.current?.publish();
         } catch {
             setErrorMessages(["If you see this message, something went wrong"]);
@@ -103,12 +142,10 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
                         )}
 
                         <Footer>
-                            {/* <Modal.Content.Body.Action> */}
                             <Button type="submit">
                                 <MdSend size={16} />
                                 Create
                             </Button>
-                            {/* </Modal.Content.Body.Action> */}
                             <Modal.Content.Body.Cancel>
                                 <Button>Cancel</Button>
                             </Modal.Content.Body.Cancel>

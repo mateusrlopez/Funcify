@@ -14,7 +14,7 @@ const List = (): ReactNode => {
     const search = searchParams.get("search");
 
     const { data, error, isPending } = useQuery({
-        queryKey: ["connectors"],
+        queryKey: ["dataSources"],
         queryFn: async () => getAllDataSources(),
     });
 

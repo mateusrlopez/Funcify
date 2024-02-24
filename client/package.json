@@ -63,6 +63,7 @@
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.50.0",
     "react-icons": "^5.0.1",
+    "shortid": "^2.2.16",
     "styled-components": "^6.1.8",
     "zod": "^3.22.4"
   },
@@ -72,6 +73,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/shortid": "^0.0.32",
     "@types/styled-components": "^5.1.34",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",

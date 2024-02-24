@@ -4,12 +4,30 @@ import styled, { css } from "styled-components";
 
 export const Root = styled.div`
     width: 100%;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+`;
+
+export const Content = styled.div`
+    width: 100%;
     height: 60px;
     padding: 0 10px;
     border-bottom: 1px solid ${({ theme }) => theme.colors.darkestGray};
     display: flex;
     align-items: center;
     justify-content: space-between;
+`;
+
+export const Title = styled.h1`
+    ${({ theme }) => css`
+        font-size: ${theme.fontSize.md};
+        font-weight: ${theme.fontWeight.bold};
+        color: ${theme.colors.darkestGray};
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    `}
 `;
 
 export const SearchInput = styled.div`
