@@ -8,13 +8,9 @@ import { TbDots } from "react-icons/tb";
 
 import { Root, Name, Text, Actions } from "./Item.styles";
 
-type MQTTProps = {
-    broker: string;
-    qos: number;
-    topic: string;
-};
+type MqttProps = MqttConfiguration;
 
-const MQTT = ({ broker, qos, topic }: MQTTProps): ReactNode => (
+const MQTT = ({ broker, qos, topic }: MqttProps): ReactNode => (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <Text>
             <strong>Broker:</strong> {broker}
@@ -28,12 +24,7 @@ const MQTT = ({ broker, qos, topic }: MQTTProps): ReactNode => (
     </div>
 );
 
-type RedisProps = {
-    address: string;
-    username: string;
-    database: string;
-    channel: string;
-};
+type RedisProps = Omit<RedisConfiguration, "password">;
 
 const Redis = ({ address, username, database, channel }: RedisProps): ReactNode => (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -77,7 +68,7 @@ const Item = (props: Props): ReactNode => {
             </div>
 
             {props.type === "MQTT" ? (
-                <MQTT {...(props.configuration as MQTTProps)} />
+                <MQTT {...(props.configuration as MqttProps)} />
             ) : (
                 <Redis {...(props.configuration as RedisProps)} />
             )}

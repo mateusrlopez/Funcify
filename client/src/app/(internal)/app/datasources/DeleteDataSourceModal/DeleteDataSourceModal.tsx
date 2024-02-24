@@ -34,7 +34,6 @@ const DeleteDataSourceModal = ({
     });
 
     const onHandleSubmit = async (): Promise<void> => {
-        console.log("aqui");
         try {
             await deleteDataSourceFn(props.id);
             setToastContent({

@@ -62,7 +62,7 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
         },
     });
 
-    const onHandleSubmit: SubmitHandler<DataSourceSchema> = async (data: any) => {
+    const onHandleSubmit: SubmitHandler<CreateDataSource> = async (data: any) => {
         try {
             if (dataSourceType === "MQTT") {
                 await createDataSourceFn({
