@@ -4,14 +4,25 @@ import { Item } from "@/app/(internal)/app/datasources/List/Item";
 import { DiamondLoader } from "@/components/Loading";
 import { getAllDataSources } from "@/repository/dataSourcesRepository";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { ReactNode } from "react";
 
 import { Root, ErrorMessage } from "./List.styles";
 
 const List = (): ReactNode => {
+    const searchParams = useSearchParams();
+    const search = searchParams.get("search");
+
     const { data, error, isPending } = useQuery({
         queryKey: ["connectors"],
         queryFn: async () => getAllDataSources(),
+    });
+
+    const itemsToRender = data?.dataSources.filter((dataSource: DataSourceSchema) => {
+        if (search) {
+            return dataSource.name.toLowerCase().includes(search.toLowerCase());
+        }
+        return true;
     });
 
     return (
@@ -38,12 +49,13 @@ const List = (): ReactNode => {
 
             {!isPending &&
                 !error &&
-                data &&
-                data?.dataSources?.map((dataSource: DataSourceSchema): ReactNode => {
+                itemsToRender &&
+                itemsToRender?.map((dataSource: DataSourceSchema): ReactNode => {
                     if (dataSource.type === "MQTT")
                         return (
                             <Item
                                 key={dataSource.id}
+                                id={dataSource.id}
                                 type="MQTT"
                                 name={dataSource.name}
                                 configuration={dataSource.configuration}
@@ -54,6 +66,7 @@ const List = (): ReactNode => {
                         return (
                             <Item
                                 key={dataSource.id}
+                                id={dataSource.id}
                                 type="REDIS"
                                 name={dataSource.name}
                                 configuration={dataSource.configuration}

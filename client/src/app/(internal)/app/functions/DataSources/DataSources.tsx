@@ -1,7 +1,5 @@
 "use client";
 
-import { MQTT } from "@/app/(internal)/app/connectors/_views/Mqtt";
-import { Redis } from "@/app/(internal)/app/connectors/_views/Redis";
 import { Button } from "@/components/Button";
 import { Select } from "@/components/Select";
 import { ReactNode, useState } from "react";
@@ -18,11 +16,6 @@ import {
     DatasourceContent,
     DatasourceSectionTitle,
 } from "./DataSources.styles";
-
-const VIEW = {
-    redis: <Redis />,
-    mqtt: <MQTT />,
-};
 
 const DataSources = (): ReactNode => {
     const [dataSource, setDataSource] = useState<"input" | "output">("input");
@@ -49,7 +42,7 @@ const DataSources = (): ReactNode => {
                         </Select>
                         <br />
                         <DatasourceSectionTitle>Configuration</DatasourceSectionTitle>
-                        {VIEW[eventInSource as keyof typeof VIEW]}
+                        {/* {VIEW[eventInSource as keyof typeof VIEW]} */}
                         <Button $full>
                             <BsRocketTakeoff />
                             Save connector
@@ -72,7 +65,7 @@ const DataSources = (): ReactNode => {
                         </Select>
                         <br />
                         <DatasourceSectionTitle>Configuration</DatasourceSectionTitle>
-                        {VIEW[eventOutSource as keyof typeof VIEW]}
+                        {/* {VIEW[eventOutSource as keyof typeof VIEW]} */}
                         <Button $full>
                             <BsRocketTakeoff />
                             Save connector

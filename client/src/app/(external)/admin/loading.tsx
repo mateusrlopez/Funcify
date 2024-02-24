@@ -1,3 +1,5 @@
+"use client";
+
 import { DiamondLoader } from "@/components/Loading";
 import { ReactNode } from "react";
 
