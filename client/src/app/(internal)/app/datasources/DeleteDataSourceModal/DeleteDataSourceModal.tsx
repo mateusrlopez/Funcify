@@ -1,7 +1,10 @@
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
-import { ChangeEvent, PropsWithChildren, ReactNode, useState } from "react";
+import { Toast } from "@/components/Toast";
+import { deleteDataSource } from "@/repository/dataSourcesRepository";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChangeEvent, PropsWithChildren, ReactNode, useRef, useState } from "react";
 import { MdDelete } from "react-icons/md";
 
 import { Footer } from "./DeleteDataSourceModal.styles";
@@ -15,7 +18,38 @@ const DeleteDataSourceModal = ({
     children,
     ...props
 }: PropsWithChildren<DataSourceSchema & Props>): ReactNode => {
+    const queryClient = useQueryClient();
+    const toastRef = useRef<ToastRefType>();
+
     const [inputValue, setInputValue] = useState("");
+    const [toastContent, setToastContent] = useState({ title: "", message: "" });
+
+    const { mutateAsync: deleteDataSourceFn } = useMutation({
+        mutationFn: deleteDataSource,
+        onSuccess(_, variables) {
+            queryClient.setQueryData(["dataSources"], (data: Array<DataSourceSchema>) =>
+                data.filter(dataSource => dataSource.id !== variables)
+            );
+        },
+    });
+
+    const onHandleSubmit = async (): Promise<void> => {
+        console.log("aqui");
+        try {
+            await deleteDataSourceFn(props.id);
+            setToastContent({
+                title: "Data source deleted",
+                message: `The data source "${props.name}" was deleted`,
+            });
+            toastRef.current?.publish();
+        } catch {
+            setToastContent({
+                title: "An error occurred",
+                message: `The data source "${props.name}" could not be deleted`,
+            });
+            toastRef.current?.publish();
+        }
+    };
 
     return (
         <Modal open={props.open} onOpenChange={() => props.setOpen(false)}>
@@ -40,7 +74,7 @@ const DeleteDataSourceModal = ({
                         </Input>
 
                         <Footer>
-                            <Button disabled={inputValue !== props.name}>
+                            <Button disabled={inputValue !== props.name} onClick={onHandleSubmit}>
                                 <MdDelete size={20} />
                                 Delete
                             </Button>
@@ -51,6 +85,13 @@ const DeleteDataSourceModal = ({
                     </div>
                 </Modal.Content.Body>
             </Modal.Content>
+
+            <Toast>
+                <Toast.Content ref={toastRef} variant="error">
+                    <Toast.Title>{toastContent.title}</Toast.Title>
+                    <Toast.Description>{toastContent.message}</Toast.Description>
+                </Toast.Content>
+            </Toast>
         </Modal>
     );
 };
