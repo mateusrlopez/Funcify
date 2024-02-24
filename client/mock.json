@@ -57,5 +57,21 @@
         }
       }
     ]
+  },
+  "users": {
+    "users": [
+      {
+        "id": "1",
+        "email": "admin@example.com",
+        "role": "ADMIN",
+        "createdAt": "2019-01-01T00:00:00Z"
+      },
+      {
+        "id": "2",
+        "email": "admin2@example.com",
+        "role": "COMMON",
+        "createdAt": "2019-05-08T00:00:00Z"
+      }
+    ]
   }
 }

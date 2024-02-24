@@ -4,9 +4,9 @@ import { CreateDataSourceModal } from "@/app/(internal)/app/datasources/CreateDa
 import { Button } from "@/components/Button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, useCallback } from "react";
+import { FaUsers } from "react-icons/fa6";
 import { IoSearch } from "react-icons/io5";
 import { MdAdd } from "react-icons/md";
-import { TbCloudDataConnection } from "react-icons/tb";
 
 import { Root, Content, Title, SearchInput } from "./Header.styles";
 
@@ -29,15 +29,15 @@ const Header = (): ReactNode => {
         <Root>
             <Content>
                 <Title>
-                    <TbCloudDataConnection size={20} />
-                    Data Sources
+                    <FaUsers size={18} />
+                    Preferences / Users
                 </Title>
             </Content>
             <Content>
                 <CreateDataSourceModal>
                     <Button>
                         <MdAdd size={20} />
-                        Add Connector
+                        Add User
                     </Button>
                 </CreateDataSourceModal>
                 <div style={{ width: "250px" }}>

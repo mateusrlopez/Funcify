@@ -1,14 +1,16 @@
-type User = {
+type UserSchema = {
     id: string;
     email: string;
     role: "ADMIN" | "COMMON";
     createdAt: string;
 };
 
-type CreateUser = Omit<User, "id" | "createdAt"> & {
+type CreateUser = Omit<UserSchema, "id" | "createdAt"> & {
     password: string;
 };
 
-type UpdateUser = Omit<User, "id" | "createdAt">;
+type UpdateUser = Omit<UserSchema, "id" | "createdAt">;
 
-type GetAllUsers = Array<User>;
+type GetAllUsers = {
+    users: Array<UserSchema>;
+};
