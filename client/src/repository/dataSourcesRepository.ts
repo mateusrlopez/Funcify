@@ -1,4 +1,5 @@
 import { client } from "@/lib/axios-client";
+import { CreateDataSource, DataSourceSchema, GetAllDataSources } from "@/types/dataSource";
 import { AxiosResponse } from "axios";
 
 const PREFIX = "data-sources";

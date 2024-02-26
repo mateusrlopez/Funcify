@@ -2,6 +2,7 @@
 
 import { DeleteDataSourceModal } from "@/app/(internal)/app/datasources/DeleteDataSourceModal";
 import { Dropdown } from "@/components/Dropdown";
+import { DataSourceSchema, MqttConfiguration, RedisConfiguration } from "@/types/dataSource";
 import { ReactNode, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { TbDots } from "react-icons/tb";

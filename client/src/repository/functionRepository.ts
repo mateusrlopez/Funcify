@@ -1,4 +1,5 @@
 import { client } from "@/lib/axios-client";
+import { CreateFunction, FunctionSchema, GetAllFunctions, UpdateFunction } from "@/types/function";
 import { AxiosResponse } from "axios";
 
 const PREFIX = "functions";

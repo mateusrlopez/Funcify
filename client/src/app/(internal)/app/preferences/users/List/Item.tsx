@@ -2,6 +2,7 @@
 
 import { DeleteUserModal } from "@/app/(internal)/app/preferences/users/DeleteUserModal";
 import { Dropdown } from "@/components/Dropdown";
+import { UserSchema } from "@/types/user";
 import { ReactNode, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { TbDots } from "react-icons/tb";

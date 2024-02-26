@@ -1,1 +1,1 @@
-export * from "./DeleteDataSourceModal";
+export * from "./DeleteUserModal";

@@ -1,16 +1,9 @@
-type ConnectorConfiguration = MqttConfiguration | RedisConfiguration;
+import { FunctionSchema as FunctionZodSchema } from "@/schemas/function";
+import { MqttConfiguration, RedisConfiguration } from "@/types/dataSource";
+import { z } from "zod";
 
-type FunctionSchema<I = ConnectorConfiguration, O = MqttConfiguration> = {
-    id: string;
-    name: string;
-    sourceCode: string;
-    methodToExecute: string;
-    status: "CREATING" | "RUNNING" | "ERROR";
-    inputConnectorType: "MQTT" | "REDIS";
-    inputConnectorConfiguration: I;
-    outputConnectorType: "MQTT" | "REDIS";
-    outputConnectorConfiguration: O;
-};
+type ConnectorConfiguration = MqttConfiguration | RedisConfiguration;
+type FunctionSchema = z.infer<typeof FunctionZodSchema>;
 
 type CreateFunction<I = ConnectorConfiguration, O = ConnectorConfiguration> = Omit<
     FunctionSchema<I, O>,

@@ -2,6 +2,7 @@
 
 import { ContextMenu } from "@/components/ContextMenu";
 import { CoreTheme } from "@/theme/core";
+import { FunctionSchema } from "@/types/function";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { ReactNode, useCallback, useState } from "react";
 import { FaRegFileCode } from "react-icons/fa6";

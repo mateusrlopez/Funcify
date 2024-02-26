@@ -4,6 +4,7 @@ import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { Toast } from "@/components/Toast";
 import { updateFunction } from "@/repository/functionRepository";
+import { FunctionSchema } from "@/types/function";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PropsWithChildren, ReactNode, useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";

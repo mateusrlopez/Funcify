@@ -1,23 +1,13 @@
-type MqttConfiguration = {
-    broker: string;
-    topic: string;
-    qos: number;
-};
+import {
+    MQTTConfigSchema,
+    RedisConfigSchema,
+    DataSourceSchema as DataSourceZodSchema,
+} from "@/schemas/dataSource";
+import { z } from "zod";
 
-type RedisConfiguration = {
-    address: string;
-    username: string;
-    password: string;
-    database: string;
-    channel: string;
-};
-
-type DataSourceSchema = {
-    id: string;
-    name: string;
-    type: "MQTT" | "REDIS";
-    configuration: MqttConfiguration | RedisConfiguration;
-};
+type MqttConfiguration = z.infer<typeof MQTTConfigSchema>;
+type RedisConfiguration = z.infer<typeof RedisConfigSchema>;
+type DataSourceSchema = z.infer<typeof DataSourceZodSchema>;
 
 type DataSourceConfigOmittedSchema = {
     id: string;

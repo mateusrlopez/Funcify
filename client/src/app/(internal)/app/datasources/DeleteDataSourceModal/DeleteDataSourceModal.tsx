@@ -3,6 +3,7 @@ import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { Toast } from "@/components/Toast";
 import { deleteDataSource } from "@/repository/dataSourcesRepository";
+import { DataSourceSchema } from "@/types/dataSource";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChangeEvent, PropsWithChildren, ReactNode, useRef, useState } from "react";
 import { MdDelete } from "react-icons/md";
