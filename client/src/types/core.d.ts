@@ -1,0 +1,1 @@
+type ToastRefType = { publish: () => void };

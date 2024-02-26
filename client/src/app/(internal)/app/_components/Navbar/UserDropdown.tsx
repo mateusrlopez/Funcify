@@ -1,4 +1,8 @@
+"use client";
+
+import { Dropdown } from "@/components/Dropdown";
 import { ReactElement } from "react";
+import { MdExitToApp } from "react-icons/md";
 
 import { Root, Column, Text, User } from "./UserDropdown.styles";
 
@@ -13,7 +17,17 @@ const UserDropdown = (): ReactElement => {
                     03/02/2024 13:45
                 </Text>
             </Column>
-            <User>AV</User>
+            <Dropdown>
+                <Dropdown.Trigger>
+                    <User>AV</User>
+                </Dropdown.Trigger>
+                <Dropdown.Content>
+                    <Dropdown.Item>
+                        <MdExitToApp size={16} />
+                        Sign out
+                    </Dropdown.Item>
+                </Dropdown.Content>
+            </Dropdown>
         </Root>
     );
 };

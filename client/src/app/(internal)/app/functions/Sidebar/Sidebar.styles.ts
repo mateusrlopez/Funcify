@@ -61,9 +61,15 @@ export const SearchInput = styled.div`
     `}
 `;
 
+export const FunctionHeader = styled.div`
+    width: 100%;
+    padding: 10px;
+    border-top: 1px solid ${({ theme }) => theme.colors.darkestGray};
+    border-bottom: 1px solid ${({ theme }) => theme.colors.darkestGray};
+`;
+
 export const FunctionList = styled.ul`
     width: 100%;
-    border-top: 1px solid ${({ theme }) => theme.colors.darkestGray};
     overflow-x: hidden;
     overflow-y: scroll;
 
@@ -98,7 +104,6 @@ export const FunctionListTitle = styled.span`
         padding: 10px 10px 9px 10px;
         border-radius: 4px;
         background: ${theme.colors.gray100};
-        margin: 10px 0 10px 10px;
         user-select: none;
     `}
 `;

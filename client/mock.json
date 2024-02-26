@@ -1,0 +1,77 @@
+{
+  "functions": {
+    "functions": [
+      {
+        "id": "0b557b0b-1982-4e8a-969c-3b9950f08024",
+        "name": "test-function-redis-1",
+        "sourceCode": "function Execute(data) { return data * 2 }",
+        "methodToExecute": "Execute",
+        "status": "RUNNING",
+        "inputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "inputConnectorConfiguration": {
+          "channel": "input"
+        },
+        "outputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "outputConnectorConfiguration": {
+          "channel": "output"
+        }
+      },
+      {
+        "id": "1b557b1b-1982-4e8a-969c-3b9950f08024",
+        "name": "test-function-redis-2",
+        "sourceCode": "function Execute(data) { return data * 2 }",
+        "methodToExecute": "Execute",
+        "status": "ERROR",
+        "inputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "inputConnectorConfiguration": {
+          "channel": "input"
+        },
+        "outputConnectorDataSourceId": "bceb411b-dd65-4377-81e7-cb752d6732b9",
+        "outputConnectorConfiguration": {
+          "channel": "output"
+        }
+      }
+    ]
+  },
+  "data-sources": {
+    "dataSources": [
+      {
+        "id": "123",
+        "name": "redis-test",
+        "type": "REDIS",
+        "configuration": {
+          "address": "127.0.0.1:6379",
+          "username": "",
+          "password": "funcify",
+          "database": 0
+        }
+      },
+      {
+        "id": "456",
+        "name": "mqtt-test",
+        "type": "MQTT",
+        "configuration": {
+          "broker": "broker.example.com",
+          "topic": "EXAMPLE/TOPIC/1",
+          "qos": 1
+        }
+      }
+    ]
+  },
+  "users": {
+    "users": [
+      {
+        "id": "1",
+        "email": "admin@example.com",
+        "role": "ADMIN",
+        "createdAt": "2019-01-01T00:00:00Z"
+      },
+      {
+        "id": "2",
+        "email": "admin2@example.com",
+        "role": "COMMON",
+        "createdAt": "2019-05-08T00:00:00Z"
+      }
+    ]
+  }
+}

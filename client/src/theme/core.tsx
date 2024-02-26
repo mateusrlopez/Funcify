@@ -16,6 +16,10 @@ export const CoreTheme = {
         black: "#000",
         lighterRed: "#E54D2E",
         darkestRed: "#D13415",
+        lighterGreen: "#2ECC71",
+        darkestGreen: "#27AE60",
+        lighterBlue: "#3498DB",
+        darkestBlue: "#2980B9",
     },
     fontSize: {
         xs: "0.667rem",

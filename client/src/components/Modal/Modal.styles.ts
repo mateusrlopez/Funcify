@@ -89,7 +89,6 @@ export const ContainerBody = styled.div`
     width: 100%;
     height: max-content;
     max-height: 500px;
-
     overflow-x: hidden;
     overflow-y: scroll;
 
