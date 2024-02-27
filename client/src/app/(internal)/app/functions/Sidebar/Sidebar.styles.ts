@@ -107,3 +107,16 @@ export const FunctionListTitle = styled.span`
         user-select: none;
     `}
 `;
+
+export const ErrorMessage = styled.h2`
+    ${({ theme }) => css`
+        color: ${theme.colors.darkestGray};
+        font-size: ${theme.fontSize.md};
+        font-weight: ${theme.fontWeight.bold};
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        text-align: center;
+        height: calc(100vh - 295px);
+    `};
+`;

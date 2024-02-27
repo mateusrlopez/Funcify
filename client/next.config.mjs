@@ -2,9 +2,9 @@
 const nextConfig = {
     compiler: {
         styledComponents: true,
-        removeConsole: {
-            exclude: ["error"],
-        },
+        // removeConsole: {
+        //     exclude: ["error"],
+        // },
     },
     staticPageGenerationTimeout: 0,
     reactStrictMode: true,
