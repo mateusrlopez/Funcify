@@ -48,8 +48,10 @@ const Item = (props: Props): ReactNode => {
                 </Text>
             </div>
 
-            <DeleteUserModal open={modalDeleteOpen} setOpen={setModalDeleteOpen} {...props} />
-            <EditUserModal open={modalEditOpen} setOpen={setModalEditOpen} {...props} />
+            <div style={{ position: "absolute" }}>
+                <DeleteUserModal open={modalDeleteOpen} setOpen={setModalDeleteOpen} {...props} />
+                <EditUserModal open={modalEditOpen} setOpen={setModalEditOpen} {...props} />
+            </div>
         </Root>
     );
 };

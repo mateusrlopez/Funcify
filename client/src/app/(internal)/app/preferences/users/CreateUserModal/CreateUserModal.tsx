@@ -5,40 +5,42 @@ import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { Select } from "@/components/Select";
 import { Toast } from "@/components/Toast";
-import { updateUser } from "@/repository/userRepository";
+import { createUser } from "@/repository/userRepository";
 import { UserSchema } from "@/types/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { BiError } from "react-icons/bi";
-import { MdSend } from "react-icons/md";
+import { MdAdd } from "react-icons/md";
+import shortid from "shortid";
 import { z } from "zod";
 
-import { ErrorMessage, Form, InputContainer, Footer } from "./EditUserModal.styles";
+import { ErrorMessage, Form, InputContainer, Footer } from "./CreateUserModal.styles";
 
-const editUserSchema = z.object({
+const createUserSchema = z.object({
     email: z.string().email().min(1, { message: "E-mail is required" }),
+    password: z.string().min(8, { message: "Password needs to have at least 8 characters" }),
 });
 
-type EditUserSchema = z.infer<typeof editUserSchema> & { role: "ADMIN" | "COMMON" };
+type CreateUserSchema = z.infer<typeof createUserSchema> & { role: "ADMIN" | "COMMON" };
 
-type Props = UserSchema & {
+type Props = {
     open: boolean;
     setOpen: (value: boolean) => void;
 };
 
-const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
+const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
     const toastRef = useRef<ToastRefType>();
     const [errorMessages, setErrorMessages] = useState<Array<string> | null>(null);
-    const [role, setRole] = useState<"ADMIN" | "COMMON">(props.role);
+    const [role, setRole] = useState<"ADMIN" | "COMMON">("COMMON");
 
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm({
-        resolver: zodResolver(editUserSchema),
+        resolver: zodResolver(createUserSchema),
     });
     const queryClient = useQueryClient();
 
@@ -50,30 +52,33 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
     }, [errors]);
 
     const { mutateAsync: editUserModal } = useMutation({
-        mutationFn: (variables: { id: string; data: EditUserSchema }) =>
-            updateUser(variables.id, variables.data),
+        mutationFn: (variables: { data: CreateUserSchema }) => createUser(variables.data),
         onSuccess(_, variables) {
-            queryClient.setQueryData(["users"], (data: Array<UserSchema>) => [
-                ...data,
-                {
-                    id: props.id,
-                    email: variables.data.email,
-                    role: variables.data.role,
-                    createdAt: props.createdAt,
-                },
-            ]);
+            queryClient.setQueryData(["users"], (data: Array<UserSchema>) => {
+                const date = new Date();
+                return [
+                    ...data,
+                    {
+                        id: shortid.generate(),
+                        email: variables.data.email,
+                        role: variables.data.role,
+                        createdAt: date.getDate(),
+                    },
+                ];
+            });
         },
     });
 
-    const onHandleSubmit: SubmitHandler<EditUserSchema> = async (data: {
+    const onHandleSubmit: SubmitHandler<CreateUserSchema> = async (data: {
         email: string;
+        password: string;
     }): Promise<void> => {
         try {
             await editUserModal(
                 {
-                    id: props.id,
                     data: {
                         email: data.email,
+                        password: data.password,
                         role,
                     },
                 },
@@ -91,7 +96,7 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
     return (
         <Modal open={open} onOpenChange={setOpen}>
             <Modal.Content width="500px">
-                <Modal.Content.Header closeButton>Edit user e-mail</Modal.Content.Header>
+                <Modal.Content.Header closeButton>Create user</Modal.Content.Header>
                 <Modal.Content.Body>
                     {/* @ts-ignore */}
                     <Form onSubmit={handleSubmit(onHandleSubmit)}>
@@ -101,7 +106,6 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
                                 <Input.Field
                                     $tag="input"
                                     id="user-email"
-                                    defaultValue={props.email}
                                     max={64}
                                     {...register("email", { required: true })}
                                 />
@@ -109,6 +113,22 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
                             <ErrorMessage>
                                 <BiError size={13} />
                                 E-mail is required
+                            </ErrorMessage>
+                        </InputContainer>
+
+                        <InputContainer>
+                            <Input>
+                                <Input.Label fieldId="user-password">Password</Input.Label>
+                                <Input.Field
+                                    $tag="input"
+                                    id="user-password"
+                                    max={64}
+                                    {...register("password", { required: true })}
+                                />
+                            </Input>
+                            <ErrorMessage>
+                                <BiError size={13} />
+                                Password is required
                             </ErrorMessage>
                         </InputContainer>
 
@@ -127,8 +147,8 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
 
                         <Footer>
                             <Button type="submit">
-                                <MdSend size={16} />
-                                Send
+                                <MdAdd size={16} />
+                                Create
                             </Button>
                             <Modal.Content.Body.Cancel>
                                 <Button $variant="secondary">Cancel</Button>
@@ -154,4 +174,4 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
     );
 };
 
-export { EditUserModal };
+export { CreateUserModal };

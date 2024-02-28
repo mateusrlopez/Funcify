@@ -153,7 +153,7 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
                                 Create
                             </Button>
                             <Modal.Content.Body.Cancel>
-                                <Button>Cancel</Button>
+                                <Button $variant="secondary">Cancel</Button>
                             </Modal.Content.Body.Cancel>
                         </Footer>
                     </Form>
