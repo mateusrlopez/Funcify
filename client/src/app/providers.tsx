@@ -1,5 +1,6 @@
 "use client";
 
+import { FunctionsProvider } from "@/app/_context/functions";
 import { queryClient } from "@/lib/query-client";
 import StyledComponentsRegistry from "@/lib/registry";
 import { CoreTheme } from "@/theme/core";
@@ -14,7 +15,7 @@ const Providers = ({ children }: { children: ReactNode }): ReactNode => {
             <ThemeProvider theme={CoreTheme}>
                 <QueryClientProvider client={queryClient}>
                     <ReactQueryDevtools initialIsOpen={false} />
-                    {children}
+                    <FunctionsProvider>{children}</FunctionsProvider>
                 </QueryClientProvider>
             </ThemeProvider>
         </StyledComponentsRegistry>

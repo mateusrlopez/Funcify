@@ -1,16 +1,19 @@
 "use client";
 
+import { FunctionsContext } from "@/app/_context/functions";
 import { THEMES } from "@/app/(internal)/app/functions/CodeEditor/THEMES";
 import { Dropdown } from "@/components/Dropdown";
 import { javascript } from "@codemirror/lang-javascript";
 import CodeMirror from "@uiw/react-codemirror";
-import { ReactNode, useState } from "react";
+import { ReactNode, useContext, useState } from "react";
 import { IoMdSettings } from "react-icons/io";
 import { MdCheck, MdFormatColorFill, MdOutlineKeyboardTab } from "react-icons/md";
 
 import { Root, Toolbar, LastUpdate, Settings } from "./CodeEditor.styles";
 
 const CodeEditor = (): ReactNode => {
+    const functionsCtx = useContext(FunctionsContext);
+
     const [editorConfig, setEditorConfig] = useState({
         lineNumber: true,
         foldGutter: true,
@@ -136,8 +139,7 @@ const CodeEditor = (): ReactNode => {
                 height="calc(100vh - 142px)"
                 style={{ flexGrow: 1 }}
                 theme={THEMES[editorConfig.theme as keyof typeof THEMES].theme}
-                onChange={(code: string) => console.log(code)}
-                // readOnly={functionsCtx?.editorReadonly}
+                onChange={(code: string) => functionsCtx?.setCode(code)}
                 basicSetup={{
                     foldGutter: editorConfig.foldGutter,
                     lineNumbers: editorConfig.lineNumber,
