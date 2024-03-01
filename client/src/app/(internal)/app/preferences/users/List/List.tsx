@@ -3,6 +3,7 @@
 import { Item } from "@/app/(internal)/app/preferences/users/List/Item";
 import { DiamondLoader } from "@/components/Loading";
 import { getAllUsers } from "@/repository/userRepository";
+import { UserSchema } from "@/types/user";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { ReactNode } from "react";

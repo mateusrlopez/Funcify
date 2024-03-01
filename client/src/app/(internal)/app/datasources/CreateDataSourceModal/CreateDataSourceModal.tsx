@@ -6,6 +6,12 @@ import { Modal } from "@/components/Modal";
 import { Select } from "@/components/Select";
 import { Toast } from "@/components/Toast";
 import { createDataSource } from "@/repository/dataSourcesRepository";
+import {
+    CreateDataSource,
+    DataSourceSchema,
+    MqttConfiguration,
+    RedisConfiguration,
+} from "@/types/dataSource";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect, useRef, useState } from "react";
@@ -147,7 +153,7 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
                                 Create
                             </Button>
                             <Modal.Content.Body.Cancel>
-                                <Button>Cancel</Button>
+                                <Button $variant="secondary">Cancel</Button>
                             </Modal.Content.Body.Cancel>
                         </Footer>
                     </Form>

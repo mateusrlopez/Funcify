@@ -2,6 +2,7 @@ import { Footer } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionMod
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
+import { FunctionSchema } from "@/types/function";
 import { ChangeEvent, PropsWithChildren, ReactNode, useState } from "react";
 import { MdDelete } from "react-icons/md";
 

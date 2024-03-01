@@ -7,6 +7,7 @@ import { Input } from "@/components/Input/Input";
 import { Toast } from "@/components/Toast";
 import { signIn } from "@/repository/authRepository";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,6 +31,7 @@ const Form = (): ReactNode => {
         resolver: zodResolver(loginSchema),
     });
 
+    const router = useRouter();
     const toastRef = useRef<ToastRefType>();
     const [errorMessages, setErrorMessages] = useState<Array<string> | null>(null);
 
@@ -41,12 +43,13 @@ const Form = (): ReactNode => {
     }, [errors]);
 
     const onHandleSubmit: SubmitHandler<LoginSchema> = async data => {
+        console.log("data", data);
         try {
             const { email, password } = data;
-            await signIn(email, password);
-
-            // TODO: Redirect to the dashboard
-        } catch {
+            const { headers } = await signIn(email, password);
+            console.log(headers["set-cookie"]);
+            router.push("/app/functions", { scroll: false });
+        } catch (err) {
             setErrorMessages(["Invalid credentials"]);
             if (toastRef.current) toastRef.current.publish();
         }

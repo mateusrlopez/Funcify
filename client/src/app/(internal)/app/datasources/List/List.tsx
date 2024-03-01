@@ -3,6 +3,7 @@
 import { Item } from "@/app/(internal)/app/datasources/List/Item";
 import { DiamondLoader } from "@/components/Loading";
 import { getAllDataSources } from "@/repository/dataSourcesRepository";
+import { DataSourceSchema } from "@/types/dataSource";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { ReactNode } from "react";

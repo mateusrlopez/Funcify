@@ -1,4 +1,5 @@
 import { client } from "@/lib/axios-client";
+import { CreateUser, GetAllUsers, UpdateUser, UserSchema } from "@/types/user";
 import { AxiosResponse } from "axios";
 
 const PREFIX = "users";

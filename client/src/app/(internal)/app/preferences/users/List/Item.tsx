@@ -1,9 +1,11 @@
 "use client";
 
 import { DeleteUserModal } from "@/app/(internal)/app/preferences/users/DeleteUserModal";
+import { EditUserModal } from "@/app/(internal)/app/preferences/users/EditUserModal/EditUserModal";
 import { Dropdown } from "@/components/Dropdown";
+import { UserSchema } from "@/types/user";
 import { ReactNode, useState } from "react";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdEdit } from "react-icons/md";
 import { TbDots } from "react-icons/tb";
 
 import { Root, Email, Text, Actions } from "./Item.styles";
@@ -11,6 +13,7 @@ import { Root, Email, Text, Actions } from "./Item.styles";
 type Props = UserSchema;
 
 const Item = (props: Props): ReactNode => {
+    const [modalEditOpen, setModalEditOpen] = useState<boolean>(false);
     const [modalDeleteOpen, setModalDeleteOpen] = useState<boolean>(false);
 
     return (
@@ -24,6 +27,10 @@ const Item = (props: Props): ReactNode => {
                         </Actions>
                     </Dropdown.Trigger>
                     <Dropdown.Content>
+                        <Dropdown.Item onClick={() => setModalEditOpen(true)}>
+                            <MdEdit />
+                            Edit user e-mail
+                        </Dropdown.Item>
                         <Dropdown.Item onClick={() => setModalDeleteOpen(true)}>
                             <MdDelete />
                             Delete user
@@ -41,7 +48,10 @@ const Item = (props: Props): ReactNode => {
                 </Text>
             </div>
 
-            <DeleteUserModal open={modalDeleteOpen} setOpen={setModalDeleteOpen} {...props} />
+            <div style={{ position: "absolute" }}>
+                <DeleteUserModal open={modalDeleteOpen} setOpen={setModalDeleteOpen} {...props} />
+                <EditUserModal open={modalEditOpen} setOpen={setModalEditOpen} {...props} />
+            </div>
         </Root>
     );
 };

@@ -3,11 +3,12 @@ import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { Toast } from "@/components/Toast";
 import { deleteUser } from "@/repository/userRepository";
+import { UserSchema } from "@/types/user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChangeEvent, PropsWithChildren, ReactNode, useRef, useState } from "react";
 import { MdDelete } from "react-icons/md";
 
-import { Footer } from "./DeleteDataSourceModal.styles";
+import { Footer } from "./DeleteUserModal.styles";
 
 type Props = {
     open: boolean;
@@ -24,7 +25,7 @@ const DeleteUserModal = ({
     const [inputValue, setInputValue] = useState("");
     const [toastContent, setToastContent] = useState({ title: "", message: "" });
 
-    const { mutateAsync: deleteFunctionFn } = useMutation({
+    const { mutateAsync: deleteUserFn } = useMutation({
         mutationFn: deleteUser,
         onSuccess(_, variables) {
             queryClient.setQueryData(["users"], (data: Array<UserSchema>) =>
@@ -35,7 +36,7 @@ const DeleteUserModal = ({
 
     const onHandleSubmit = async (): Promise<void> => {
         try {
-            await deleteFunctionFn(props.id);
+            await deleteUserFn(props.id);
             setToastContent({
                 title: "User deleted",
                 message: `The user "${props.email}" was deleted`,

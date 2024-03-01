@@ -6,6 +6,7 @@ import { Input } from "@/components/Input/Input";
 import { Toast } from "@/components/Toast";
 import { setup } from "@/repository/setupRepository";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { ReactNode, useRef } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { BiError } from "react-icons/bi";
@@ -42,6 +43,7 @@ const Form = (): ReactNode => {
     } = useForm<SetupSchema>({
         resolver: zodResolver(setupSchema),
     });
+    const router = useRouter();
 
     const toastRef = useRef<ToastRefType>();
 
@@ -49,6 +51,7 @@ const Form = (): ReactNode => {
         try {
             const { email, password } = data;
             await setup(email, password);
+            router.push("/app/functions", { scroll: false });
         } catch {
             if (toastRef.current) toastRef.current.publish();
         }

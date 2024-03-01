@@ -17,6 +17,7 @@ import {
     FunctionList,
     FunctionListTitle,
     FunctionHeader,
+    ErrorMessage,
 } from "./Sidebar.styles";
 
 const Sidebar = (): ReactNode => {
@@ -63,6 +64,12 @@ const Sidebar = (): ReactNode => {
                     </div>
                 </FunctionHeader>
                 <FunctionList>
+                    {!isPending && error && (
+                        <div style={{ padding: "0 10px" }}>
+                            <ErrorMessage>An unexpected error occurred...</ErrorMessage>
+                        </div>
+                    )}
+
                     {!error &&
                         !isPending &&
                         data?.functions?.map(func => <FunctionListItem key={func.id} {...func} />)}
