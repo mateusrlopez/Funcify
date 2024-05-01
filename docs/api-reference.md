@@ -34,7 +34,7 @@ No response body
 
 ---
 
-### Is Done?
+### Is Setup Done?
 
 It checks if the setup was done
 

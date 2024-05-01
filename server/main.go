@@ -99,21 +99,21 @@ func main() {
 		}
 	}()
 
-	mgr := managers.NewDataSource(dataSourcesService, dataSourceCreateChan, dataSourceUpdateChan, dataSourceDeleteChan, dataSourceChangeStatusChan)
-	if err = mgr.ExecuteExistingDataSources(); err != nil {
+	manager := managers.NewDataSource(dataSourcesService, dataSourceCreateChan, dataSourceUpdateChan, dataSourceDeleteChan, dataSourceChangeStatusChan)
+	if err = manager.ExecuteExistingDataSources(); err != nil {
 		log.Fatal().Err(err).Msg("could not start the instantiation of the connections for the existing data sources in database")
 	}
 
-	go mgr.Run()
-	defer mgr.Shutdown()
+	go manager.Run()
+	defer manager.Shutdown()
 
-	r := runtimes.NewRuntime(functionsService, mgr, fnCreateChan, fnUpdateChan, fnDeleteChan, fnStatusChangeChan)
-	if err = r.ExecuteExistingFunctions(); err != nil {
+	runtime := runtimes.NewRuntime(functionsService, manager, fnCreateChan, fnUpdateChan, fnDeleteChan, fnStatusChangeChan)
+	if err = runtime.ExecuteExistingFunctions(); err != nil {
 		log.Fatal().Err(err).Msg("could not start the execution of the already existing functions in database")
 	}
 
-	go r.Run()
-	defer r.Shutdown()
+	go runtime.Run()
+	defer runtime.Shutdown()
 
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)

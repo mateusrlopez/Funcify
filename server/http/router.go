@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/go-chi/chi/v5"
 	chimiddlewares "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/mateusrlopez/funcify/http/handlers"
 	"github.com/mateusrlopez/funcify/http/middlewares"
 	"net/http"
@@ -14,6 +15,13 @@ func NewRouter(authHandler handlers.Auth, dataSourcesHandler handlers.DataSource
 	router.Use(chimiddlewares.RequestID)
 	router.Use(chimiddlewares.SetHeader("Content-Type", "application/json"))
 	router.Use(middlewares.Logger)
+
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"OPTIONS", "GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Cache-Control", "Content-Type", "Accept"},
+		AllowCredentials: true,
+	}))
 
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Route("/setup", func(r chi.Router) {
