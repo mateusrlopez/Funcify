@@ -1,3 +1,4 @@
+import { verifyIfSetupWasDone } from "@/repository/setupRepository";
 import { Metadata } from "next";
 
 import { Panel } from "./_components/Panel";
@@ -9,22 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-    // const { done: setupIsDone }: SetupIsDoneResponse = await verifyIfSetupWasDone();
+    const { done: setupIsDone }: SetupIsDoneResponse = await verifyIfSetupWasDone();
 
     await new Promise(resolve => {
-        setTimeout(resolve, 3000);
+        setTimeout(resolve, 2000);
     });
 
-    const setupIsDone = await new Promise(resolve => {
-        resolve(true);
-    });
-
-    return (
-        <Panel>
-            {setupIsDone ? <Login /> : <Setup />}
-            {/* <FirstAccess /> */}
-            {/* <ForgotPassword /> */}
-            {/* <ResetPassword /> */}
-        </Panel>
-    );
+    return <Panel>{setupIsDone ? <Login /> : <Setup />}</Panel>;
 }

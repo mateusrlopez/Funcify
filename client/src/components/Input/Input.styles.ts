@@ -54,7 +54,7 @@ export const InputContainer = styled("input").attrs<FieldProps>(({ $tag }) => ({
         }
 
         &:disabled {
-            background: ${theme.colors.gray80};
+            background: ${theme.colors.gray30};
             cursor: auto;
         }
 

@@ -68,7 +68,7 @@ export const StyledItem = styled(Select.Item)`
         border-radius: 2px;
         display: flex;
         align-items: center;
-        padding: 0 10px;
+        padding: 0 10px 0 20px;
         gap: 10px;
         height: 30px;
         position: relative;

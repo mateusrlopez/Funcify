@@ -47,7 +47,8 @@ const Form = (): ReactNode => {
         try {
             const { email, password } = data;
             const { headers } = await signIn(email, password);
-            console.log(headers["set-cookie"]);
+            // TODO - Cookie
+            console.log(headers["Set-Cookie"]);
             router.push("/app/functions", { scroll: false });
         } catch (err) {
             setErrorMessages(["Invalid credentials"]);
