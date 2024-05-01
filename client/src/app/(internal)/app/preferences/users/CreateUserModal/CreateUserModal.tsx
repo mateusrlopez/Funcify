@@ -19,7 +19,7 @@ import { z } from "zod";
 import { ErrorMessage, Form, InputContainer, Footer } from "./CreateUserModal.styles";
 
 const createUserSchema = z.object({
-    email: z.string().email().min(1, { message: "E-mail is required" }),
+    email: z.string().email().min(1, { message: "Invalid email" }),
     password: z.string().min(8, { message: "Password needs to have at least 8 characters" }),
 });
 
@@ -110,10 +110,12 @@ const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
                                     {...register("email", { required: true })}
                                 />
                             </Input>
-                            <ErrorMessage>
-                                <BiError size={13} />
-                                E-mail is required
-                            </ErrorMessage>
+                            {errorMessages?.includes("Invalid email") && (
+                                <ErrorMessage>
+                                    <BiError size={13} />
+                                    Invalid e-mail
+                                </ErrorMessage>
+                            )}
                         </InputContainer>
 
                         <InputContainer>
@@ -126,10 +128,14 @@ const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
                                     {...register("password", { required: true })}
                                 />
                             </Input>
-                            <ErrorMessage>
-                                <BiError size={13} />
-                                Password is required
-                            </ErrorMessage>
+                            {errorMessages?.includes(
+                                "Password needs to have at least 8 characters"
+                            ) && (
+                                <ErrorMessage>
+                                    <BiError size={13} />
+                                    Password needs to have at least 8 characters
+                                </ErrorMessage>
+                            )}
                         </InputContainer>
 
                         <InputContainer>

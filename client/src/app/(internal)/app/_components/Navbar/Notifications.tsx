@@ -5,6 +5,7 @@ import { Root } from "./Notifications.styles";
 
 const Notifications = (): ReactElement => (
     <Root>
+        {/* TODO - Notifications Dropdown */}
         <IoIosNotifications size={20} />
     </Root>
 );

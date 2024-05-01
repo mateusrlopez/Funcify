@@ -18,7 +18,7 @@ import { z } from "zod";
 import { ErrorMessage, Form, InputContainer, Footer } from "./EditUserModal.styles";
 
 const editUserSchema = z.object({
-    email: z.string().email().min(1, { message: "E-mail is required" }),
+    email: z.string().email().min(1, { message: "Invalid email" }),
 });
 
 type EditUserSchema = z.infer<typeof editUserSchema> & { role: "ADMIN" | "COMMON" };
@@ -106,10 +106,12 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
                                     {...register("email", { required: true })}
                                 />
                             </Input>
-                            <ErrorMessage>
-                                <BiError size={13} />
-                                E-mail is required
-                            </ErrorMessage>
+                            {errorMessages?.includes("Invalid email") && (
+                                <ErrorMessage>
+                                    <BiError size={13} />
+                                    Invalid e-mail
+                                </ErrorMessage>
+                            )}
                         </InputContainer>
 
                         <InputContainer>

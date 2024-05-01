@@ -9,7 +9,8 @@ const Login = (): ReactNode => {
         <Root>
             <Title>Log into your account</Title>
             <Form />
-            <ForgotPassword href="/admin/forgot">Forgot password?</ForgotPassword>
+            {/* TODO - Forgot password */}
+            <ForgotPassword href="#">Forgot password?</ForgotPassword>
         </Root>
     );
 };

@@ -1,6 +1,5 @@
 "use client";
 
-import { DragNDrop } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/DragNDrop";
 import { MqttDataSourceTemplate } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/MqttDataSourceTemplate";
 import { RedisDataSourceTemplate } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/RedisDataSourceTemplate";
 import { Button } from "@/components/Button";
@@ -8,12 +7,14 @@ import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { Select } from "@/components/Select";
 import { Toast } from "@/components/Toast";
-import { ToggleGroup } from "@/components/Toggle";
+import { getAllDataSources } from "@/repository/dataSourcesRepository";
+import { DataSourceSchema } from "@/types/dataSource";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { PropsWithChildren, ReactNode, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { BiError, BiFileBlank } from "react-icons/bi";
-import { MdSend, MdUploadFile } from "react-icons/md";
+import { BiError } from "react-icons/bi";
+import { MdSend } from "react-icons/md";
 import { z } from "zod";
 
 import {
@@ -36,9 +37,11 @@ const createFunctionSchema = z.object({
     methodToExecute: z
         .string()
         .min(1, { message: "Method to execute is required" })
-        .default("mainn"),
-    inputConnectorID: z.string().min(1, { message: "Input connector is required" }),
-    outputConnectorID: z.string().min(1, { message: "Output connector is required" }),
+        .default("main"),
+    input_topic: z.string().nullable(),
+    output_topic: z.string().nullable(),
+    input_channel: z.string().nullable(),
+    output_channel: z.string().nullable(),
 });
 
 export type CreateFunctionSchema = z.infer<typeof createFunctionSchema>;
@@ -51,8 +54,16 @@ const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
     } = useForm<CreateFunctionSchema>({
         resolver: zodResolver(createFunctionSchema),
     });
-    const [toggle, setToggle] = useState<"scratch" | "upload">("scratch");
     const toastRef = useRef<ToastRefType>();
+
+    const { data: dataSources, isPending } = useQuery({
+        queryKey: ["getAllDataSources"],
+        queryFn: async () => getAllDataSources(),
+    });
+
+    const dataSourceTypes = dataSources?.dataSources?.map((ds: DataSourceSchema) => ds.type);
+    const [inputDatasource, setInputDatasource] = useState<DataSourceSchema | null>(null);
+    const [outputDatasource, setOutputDatasource] = useState<DataSourceSchema | null>(null);
 
     const onHandleSubmit: SubmitHandler<CreateFunctionSchema> = async data => {
         try {
@@ -88,92 +99,71 @@ const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
                         </InputContainer>
 
                         <Group>
-                            <GroupTitle>Code</GroupTitle>
-                            <ToggleGroup
-                                type="single"
-                                defaultValue={toggle}
-                                toggles={[
-                                    {
-                                        value: (
-                                            <span
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "7px",
-                                                }}
-                                            >
-                                                <BiFileBlank size={16} />
-                                                From scratch
-                                            </span>
-                                        ),
-                                        key: "scratch",
-                                    },
-                                    {
-                                        value: (
-                                            <span
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "7px",
-                                                }}
-                                            >
-                                                <MdUploadFile size={16} />
-                                                Upload a JS file
-                                            </span>
-                                        ),
-                                        key: "upload",
-                                    },
-                                ]}
-                                onValueChange={value => setToggle(value as "scratch" | "upload")}
-                            />
-
-                            {toggle === "upload" && (
-                                <>
-                                    <DragNDrop />
-                                    <InputContainer>
-                                        <Input>
-                                            <Input.Label fieldId="create-function-method-to-execute">
-                                                Method to execute
-                                            </Input.Label>
-                                            <Input.Field
-                                                $tag="input"
-                                                id="create-function-method-to-execute"
-                                                placeholder="e.g. main"
-                                                {...register("methodToExecute")}
-                                            />
-                                        </Input>
-                                        {errors.methodToExecute &&
-                                            errors.methodToExecute.message && (
-                                                <ErrorMessage>
-                                                    <BiError size={13} />
-                                                    {errors.methodToExecute.message}
-                                                </ErrorMessage>
-                                            )}
-                                    </InputContainer>
-                                </>
-                            )}
-                        </Group>
-
-                        <Group>
-                            <GroupTitle>Data Source</GroupTitle>
+                            <GroupTitle>Data Sources</GroupTitle>
 
                             <Input>
                                 <Input.Label fieldId="input-connector-id">
                                     Input Connector
                                 </Input.Label>
-                                <Select {...register("inputConnectorID")}>
-                                    <Select.Item value="mqtt">MQTT Example 1</Select.Item>
-                                    <Select.Item value="redis">Redis Connection 1</Select.Item>
-                                </Select>
-                                {errors.inputConnectorID && errors.inputConnectorID.message && (
-                                    <ErrorMessage>
-                                        <BiError size={13} />
-                                        {errors.inputConnectorID.message}
-                                    </ErrorMessage>
+
+                                {!isPending && (
+                                    <Select
+                                        value={JSON.stringify(inputDatasource)}
+                                        onValueChange={value => {
+                                            const parsedDatasource = JSON.parse(`${value}`);
+                                            setInputDatasource(parsedDatasource);
+                                        }}
+                                    >
+                                        {dataSources?.dataSources ? (
+                                            dataSourceTypes?.map(type => (
+                                                <Select.Group label={type}>
+                                                    {dataSources.dataSources.map(
+                                                        // eslint-disable-next-line array-callback-return,consistent-return
+                                                        (ds: DataSourceSchema) => {
+                                                            if (ds.type === type) {
+                                                                return (
+                                                                    <Select.Item
+                                                                        value={JSON.stringify(ds)}
+                                                                    >
+                                                                        {ds.name}
+                                                                    </Select.Item>
+                                                                );
+                                                            }
+                                                        }
+                                                    )}
+                                                </Select.Group>
+                                            ))
+                                        ) : (
+                                            <Select.Item value="invalid">
+                                                Register a datasource first
+                                            </Select.Item>
+                                        )}
+                                    </Select>
                                 )}
+
+                                {/* {errors.inputConnectorID && errors.inputConnectorID.message && ( */}
+                                {/*    <ErrorMessage> */}
+                                {/*        <BiError size={13} /> */}
+                                {/*        {errors.inputConnectorID.message} */}
+                                {/*    </ErrorMessage> */}
+                                {/* )} */}
                             </Input>
 
-                            <RedisDataSourceTemplate register={register} />
+                            {inputDatasource?.type === "REDIS" && (
+                                <RedisDataSourceTemplate
+                                    register={register}
+                                    type="input"
+                                    dataSource={inputDatasource}
+                                />
+                            )}
+
+                            {inputDatasource?.type === "MQTT" && (
+                                <MqttDataSourceTemplate
+                                    register={register}
+                                    type="input"
+                                    dataSource={inputDatasource}
+                                />
+                            )}
 
                             <hr style={{ width: "20%" }} />
 
@@ -181,19 +171,65 @@ const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
                                 <Input.Label fieldId="output-connector-id">
                                     Output Connector
                                 </Input.Label>
-                                <Select {...register("outputConnectorID")}>
-                                    <Select.Item value="mqtt">MQTT Example 1</Select.Item>
-                                    <Select.Item value="redis">Redis Connection 1</Select.Item>
-                                </Select>
-                                {errors.outputConnectorID && errors.outputConnectorID.message && (
-                                    <ErrorMessage>
-                                        <BiError size={13} />
-                                        {errors.outputConnectorID.message}
-                                    </ErrorMessage>
+
+                                {!isPending && (
+                                    <Select
+                                        value={JSON.stringify(outputDatasource)}
+                                        onValueChange={value => {
+                                            const parsedDatasource = JSON.parse(`${value}`);
+                                            setOutputDatasource(parsedDatasource);
+                                        }}
+                                    >
+                                        {dataSources?.dataSources ? (
+                                            dataSourceTypes?.map(type => (
+                                                <Select.Group label={type}>
+                                                    {dataSources.dataSources.map(
+                                                        // eslint-disable-next-line array-callback-return,consistent-return
+                                                        (ds: DataSourceSchema) => {
+                                                            if (ds.type === type) {
+                                                                return (
+                                                                    <Select.Item
+                                                                        value={JSON.stringify(ds)}
+                                                                    >
+                                                                        {ds.name}
+                                                                    </Select.Item>
+                                                                );
+                                                            }
+                                                        }
+                                                    )}
+                                                </Select.Group>
+                                            ))
+                                        ) : (
+                                            <Select.Item value="invalid">
+                                                Register a datasource first
+                                            </Select.Item>
+                                        )}
+                                    </Select>
                                 )}
+
+                                {/* {errors.outputConnectorID && errors.outputConnectorID.message && ( */}
+                                {/*    <ErrorMessage> */}
+                                {/*        <BiError size={13} /> */}
+                                {/*        {errors.outputConnectorID.message} */}
+                                {/*    </ErrorMessage> */}
+                                {/* )} */}
                             </Input>
 
-                            <MqttDataSourceTemplate register={register} />
+                            {outputDatasource?.type === "REDIS" && (
+                                <RedisDataSourceTemplate
+                                    register={register}
+                                    type="output"
+                                    dataSource={outputDatasource}
+                                />
+                            )}
+
+                            {outputDatasource?.type === "MQTT" && (
+                                <MqttDataSourceTemplate
+                                    register={register}
+                                    type="output"
+                                    dataSource={outputDatasource}
+                                />
+                            )}
                         </Group>
 
                         <Footer>
