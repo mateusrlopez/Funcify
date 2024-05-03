@@ -4,6 +4,7 @@ import { StyledForm } from "@/app/(external)/admin/styles";
 import { Button } from "@/components/Button/Button";
 import { Checkbox } from "@/components/Checkbox/Checkbox";
 import { Input } from "@/components/Input/Input";
+import { Loader } from "@/components/Loading/Spinner.styles";
 import { Toast } from "@/components/Toast";
 import { signIn } from "@/repository/authRepository";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,11 +14,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const loginSchema = z.object({
-    email: z
-        .string()
-        .email({ message: "Invalid e-mail" })
-        .min(1, { message: "E-mail is required" }),
-    password: z.string().min(1, { message: "Password is required" }),
+    email: z.string({ required_error: "E-mail is required" }).email({ message: "Invalid e-mail" }),
+    password: z.string({ required_error: "Password is required" }),
 });
 
 type LoginSchema = z.infer<typeof loginSchema>;
@@ -33,6 +31,8 @@ const Form = (): ReactNode => {
 
     const router = useRouter();
     const toastRef = useRef<ToastRefType>();
+
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [errorMessages, setErrorMessages] = useState<Array<string> | null>(null);
 
     useEffect((): void => {
@@ -43,14 +43,13 @@ const Form = (): ReactNode => {
     }, [errors]);
 
     const onHandleSubmit: SubmitHandler<LoginSchema> = async data => {
-        console.log("data", data);
         try {
+            setIsLoading(true);
             const { email, password } = data;
-            const { headers } = await signIn(email, password);
-            // TODO - Cookie
-            console.log(headers["Set-Cookie"]);
+            await signIn(email, password);
             router.push("/app/functions", { scroll: false });
         } catch (err) {
+            setIsLoading(false);
             setErrorMessages(["Invalid credentials"]);
             if (toastRef.current) toastRef.current.publish();
         }
@@ -98,7 +97,13 @@ const Form = (): ReactNode => {
 
             <div style={{ marginTop: "5px" }} />
             <Button $full type="submit">
-                Sign In
+                {!isLoading ? (
+                    "Sign In"
+                ) : (
+                    <span style={{ display: "block", transform: "scale(0.7)" }}>
+                        <Loader />
+                    </span>
+                )}
             </Button>
         </StyledForm>
     );

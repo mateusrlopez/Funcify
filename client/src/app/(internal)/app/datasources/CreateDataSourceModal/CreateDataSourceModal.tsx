@@ -17,8 +17,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { BiError } from "react-icons/bi";
-import { MdSend } from "react-icons/md";
-import shortid from "shortid";
+import { MdClose, MdSend } from "react-icons/md";
+import shortID from "shortid";
 import { z } from "zod";
 
 import { ErrorMessage, Form, InputContainer, Footer } from "./CreateDataSourceModal.styles";
@@ -35,22 +35,26 @@ const dataSourceSchemas = {
 };
 
 const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode => {
-    const toastRef = useRef<ToastRefType>();
+    const toastErrorRef = useRef<ToastRefType>();
+    const toastSuccessRef = useRef<ToastRefType>();
+
     const [dataSourceType, setDataSourceType] = useState<"REDIS" | "MQTT">("REDIS");
     const [errorMessages, setErrorMessages] = useState<Array<string> | null>(null);
+    const [closeButton, setCloseButton] = useState<boolean>(false);
 
+    const queryClient = useQueryClient();
     const {
         register,
         handleSubmit,
         formState: { errors },
+        reset,
     } = useForm({
         resolver: zodResolver(dataSourceSchemas[dataSourceType].merge(createDataSourceSchema)),
     });
-    const queryClient = useQueryClient();
 
     useEffect((): void => {
         if (Object.keys(errors).length > 0) {
-            if (toastRef.current) toastRef.current.publish();
+            if (toastErrorRef.current) toastErrorRef.current.publish();
             setErrorMessages(Object.values(errors).map(error => error?.message) as string[]);
         }
     }, [errors]);
@@ -58,13 +62,22 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
     const { mutateAsync: createDataSourceFn } = useMutation({
         mutationFn: createDataSource,
         onSuccess(_, variables) {
-            queryClient.setQueryData(["dataSources"], (data: Array<DataSourceSchema>) => [
-                ...data,
-                {
-                    id: shortid.generate(),
-                    ...variables,
-                },
-            ]);
+            queryClient.setQueryData(
+                ["dataSources"],
+                (data: { dataSources: Array<DataSourceSchema> }) => {
+                    const currentDataSources = data.dataSources ?? [];
+
+                    const newDataSources = [
+                        ...currentDataSources,
+                        {
+                            id: shortID.generate(),
+                            ...variables,
+                        },
+                    ];
+
+                    return { dataSources: newDataSources };
+                }
+            );
         },
     });
 
@@ -94,11 +107,17 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
                 });
             }
 
-            toastRef.current?.publish();
+            toastSuccessRef.current?.publish();
+            setCloseButton(true);
         } catch {
             setErrorMessages(["If you see this message, something went wrong"]);
-            if (toastRef.current) toastRef.current.publish();
+            if (toastErrorRef.current) toastErrorRef.current.publish();
         }
+    };
+
+    const resetModal = async (): Promise<void> => {
+        setCloseButton(false);
+        reset();
     };
 
     return (
@@ -119,10 +138,12 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
                                     {...register("name", { required: true })}
                                 />
                             </Input>
-                            <ErrorMessage>
-                                <BiError size={13} />
-                                Name is required
-                            </ErrorMessage>
+                            {errors.name && errors.name.message && (
+                                <ErrorMessage>
+                                    <BiError size={13} />
+                                    Name is required
+                                </ErrorMessage>
+                            )}
                         </InputContainer>
 
                         <Input>
@@ -140,28 +161,45 @@ const CreateDataSourceModal = ({ children }: { children: ReactNode }): ReactNode
                         </Input>
 
                         {dataSourceType === "MQTT" && (
-                            <MqttDataSourceTemplate register={register} />
+                            <MqttDataSourceTemplate register={register} errors={errors} />
                         )}
 
                         {dataSourceType === "REDIS" && (
-                            <RedisDataSourceTemplate register={register} />
+                            <RedisDataSourceTemplate register={register} errors={errors} />
                         )}
 
                         <Footer>
-                            <Button type="submit">
-                                <MdSend size={16} />
-                                Create
-                            </Button>
-                            <Modal.Content.Body.Cancel>
-                                <Button $variant="secondary">Cancel</Button>
-                            </Modal.Content.Body.Cancel>
+                            {!closeButton ? (
+                                <>
+                                    <Button type="submit">
+                                        <MdSend size={16} />
+                                        Create
+                                    </Button>
+                                    <Modal.Content.Body.Cancel>
+                                        <Button $variant="secondary">Cancel</Button>
+                                    </Modal.Content.Body.Cancel>
+                                </>
+                            ) : (
+                                <Modal.Content.Body.Action>
+                                    <Button onClick={resetModal}>
+                                        <MdClose size={16} />
+                                        Close modal
+                                    </Button>
+                                </Modal.Content.Body.Action>
+                            )}
                         </Footer>
                     </Form>
                 </Modal.Content.Body>
             </Modal.Content>
 
             <Toast>
-                <Toast.Content ref={toastRef} variant="error">
+                <Toast.Content ref={toastSuccessRef} variant="success">
+                    <Toast.Title>Data source created</Toast.Title>
+                </Toast.Content>
+            </Toast>
+
+            <Toast>
+                <Toast.Content ref={toastErrorRef} variant="error">
                     <Toast.Title>An unexpected error occurred</Toast.Title>
                     <Toast.Description>
                         {errorMessages?.map((message, index) => (

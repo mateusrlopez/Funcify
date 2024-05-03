@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const MQTTConfigSchema = z.object({
     broker: z.string(),
-    topic: z.string(),
     qos: z.number(),
+    // topic: z.string(),
 });
 
 export const RedisConfigSchema = z.object({
@@ -11,7 +11,7 @@ export const RedisConfigSchema = z.object({
     username: z.string(),
     password: z.string(),
     database: z.string(),
-    channel: z.string(),
+    // channel: z.string(),
 });
 
 export const DataSourceSchema = z.object({

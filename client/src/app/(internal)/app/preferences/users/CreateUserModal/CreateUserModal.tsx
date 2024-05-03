@@ -13,7 +13,7 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { BiError } from "react-icons/bi";
 import { MdAdd } from "react-icons/md";
-import shortid from "shortid";
+import shortID from "shortid";
 import { z } from "zod";
 
 import { ErrorMessage, Form, InputContainer, Footer } from "./CreateUserModal.styles";
@@ -31,7 +31,9 @@ type Props = {
 };
 
 const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
-    const toastRef = useRef<ToastRefType>();
+    const toastSuccessRef = useRef<ToastRefType>();
+    const toastErrorRef = useRef<ToastRefType>();
+
     const [errorMessages, setErrorMessages] = useState<Array<string> | null>(null);
     const [role, setRole] = useState<"ADMIN" | "COMMON">("COMMON");
 
@@ -39,6 +41,7 @@ const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
         register,
         handleSubmit,
         formState: { errors },
+        reset,
     } = useForm({
         resolver: zodResolver(createUserSchema),
     });
@@ -46,7 +49,7 @@ const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
 
     useEffect((): void => {
         if (Object.keys(errors).length > 0) {
-            if (toastRef.current) toastRef.current.publish();
+            if (toastErrorRef.current) toastErrorRef.current.publish();
             setErrorMessages(Object.values(errors).map(error => error?.message) as string[]);
         }
     }, [errors]);
@@ -54,17 +57,21 @@ const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
     const { mutateAsync: editUserModal } = useMutation({
         mutationFn: (variables: { data: CreateUserSchema }) => createUser(variables.data),
         onSuccess(_, variables) {
-            queryClient.setQueryData(["users"], (data: Array<UserSchema>) => {
-                const date = new Date();
-                return [
-                    ...data,
-                    {
-                        id: shortid.generate(),
-                        email: variables.data.email,
-                        role: variables.data.role,
-                        createdAt: date.getDate(),
-                    },
-                ];
+            queryClient.setQueryData(["users"], (data: { users: Array<UserSchema> }) => {
+                const currentUsers = data.users ?? [];
+                const createdAt = new Date();
+
+                return {
+                    users: [
+                        ...currentUsers,
+                        {
+                            id: shortID.generate(),
+                            email: variables.data.email,
+                            role: variables.data.role,
+                            createdAt,
+                        },
+                    ],
+                };
             });
         },
     });
@@ -86,10 +93,11 @@ const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
             );
 
             setOpen(false);
-            toastRef.current?.publish();
-        } catch {
+            toastSuccessRef.current?.publish();
+            reset();
+        } catch (err) {
             setErrorMessages(["If you see this message, something went wrong"]);
-            if (toastRef.current) toastRef.current.publish();
+            if (toastErrorRef.current) toastErrorRef.current.publish();
         }
     };
 
@@ -165,7 +173,13 @@ const CreateUserModal = ({ open, setOpen }: Props): ReactNode => {
             </Modal.Content>
 
             <Toast>
-                <Toast.Content ref={toastRef} variant="error">
+                <Toast.Content ref={toastSuccessRef} variant="success">
+                    <Toast.Title>User created successfully</Toast.Title>
+                </Toast.Content>
+            </Toast>
+
+            <Toast>
+                <Toast.Content ref={toastErrorRef} variant="error">
                     <Toast.Title>An unexpected error occurred</Toast.Title>
                     <Toast.Description>
                         {errorMessages?.map((message, index) => (

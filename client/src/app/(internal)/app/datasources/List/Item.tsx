@@ -6,12 +6,13 @@ import { DataSourceSchema, MqttConfiguration, RedisConfiguration } from "@/types
 import { ReactNode, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { TbDots } from "react-icons/tb";
+import { validate as isValidUUID } from "uuid";
 
 import { Root, Name, Text, Actions } from "./Item.styles";
 
 type MqttProps = MqttConfiguration;
 
-const MQTT = ({ broker, qos, topic }: MqttProps): ReactNode => (
+const MQTT = ({ broker, qos }: MqttProps): ReactNode => (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <Text>
             <strong>Broker:</strong> {broker}
@@ -19,15 +20,12 @@ const MQTT = ({ broker, qos, topic }: MqttProps): ReactNode => (
         <Text>
             <strong>QOS:</strong> {qos}
         </Text>
-        <Text>
-            <strong>Topic:</strong> {topic}
-        </Text>
     </div>
 );
 
 type RedisProps = Omit<RedisConfiguration, "password">;
 
-const Redis = ({ address, username, database, channel }: RedisProps): ReactNode => (
+const Redis = ({ address, username, database }: RedisProps): ReactNode => (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <Text>
             <strong>Address:</strong> {address}
@@ -38,15 +36,13 @@ const Redis = ({ address, username, database, channel }: RedisProps): ReactNode 
         <Text>
             <strong>Database:</strong> {database}
         </Text>
-        <Text>
-            <strong>Channel:</strong> {channel}
-        </Text>
     </div>
 );
 
 type Props = DataSourceSchema;
 
 const Item = (props: Props): ReactNode => {
+    const canBeDeleted = isValidUUID(props.id);
     const [modalDeleteOpen, setModalDeleteOpen] = useState<boolean>(false);
 
     return (
@@ -60,7 +56,10 @@ const Item = (props: Props): ReactNode => {
                         </Actions>
                     </Dropdown.Trigger>
                     <Dropdown.Content>
-                        <Dropdown.Item onClick={() => setModalDeleteOpen(true)}>
+                        <Dropdown.Item
+                            onClick={() => setModalDeleteOpen(true)}
+                            disabled={!canBeDeleted}
+                        >
                             <MdDelete />
                             Delete data source
                         </Dropdown.Item>

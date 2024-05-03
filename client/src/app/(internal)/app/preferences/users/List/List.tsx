@@ -2,7 +2,7 @@
 
 import { Item } from "@/app/(internal)/app/preferences/users/List/Item";
 import { DiamondLoader } from "@/components/Loading";
-import { getAllUsers } from "@/repository/userRepository";
+import { getAllUsers, getMe } from "@/repository/userRepository";
 import { UserSchema } from "@/types/user";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
@@ -17,6 +17,11 @@ const List = (): ReactNode => {
     const { data, error, isPending } = useQuery({
         queryKey: ["users"],
         queryFn: async () => getAllUsers(),
+    });
+
+    const { data: myUserDetails } = useQuery({
+        queryKey: ["getMe"],
+        queryFn: async () => getMe(),
     });
 
     const itemsToRender = data?.users?.filter((user: UserSchema) => {
@@ -46,7 +51,9 @@ const List = (): ReactNode => {
                 !error &&
                 itemsToRender &&
                 itemsToRender?.map(
-                    (user: UserSchema): ReactNode => <Item key={user.id} {...user} />
+                    (user: UserSchema): ReactNode => (
+                        <Item key={user.id} {...user} isMe={myUserDetails?.id === user.id} />
+                    )
                 )}
         </Root>
     );

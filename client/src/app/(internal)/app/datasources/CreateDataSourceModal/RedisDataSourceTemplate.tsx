@@ -7,6 +7,7 @@ import { ErrorMessage, InputContainer } from "./CreateDataSourceModal.styles";
 
 type Props = {
     register: any;
+    errors: any;
 };
 
 const createRedisDataSourceSchema = z.object({
@@ -16,7 +17,7 @@ const createRedisDataSourceSchema = z.object({
     database: z.string().min(1, { message: "Database is required" }),
 });
 
-const RedisDataSourceTemplate = ({ register }: Props): ReactNode => {
+const RedisDataSourceTemplate = ({ register, errors }: Props): ReactNode => {
     return (
         <>
             <InputContainer>
@@ -28,10 +29,12 @@ const RedisDataSourceTemplate = ({ register }: Props): ReactNode => {
                         {...register("address", { required: true })}
                     />
                 </Input>
-                <ErrorMessage>
-                    <BiError size={13} />
-                    Address is required
-                </ErrorMessage>
+                {errors.address && errors.address.message && (
+                    <ErrorMessage>
+                        <BiError size={13} />
+                        {errors.address.message}
+                    </ErrorMessage>
+                )}
             </InputContainer>
             <InputContainer>
                 <Input>
@@ -43,10 +46,12 @@ const RedisDataSourceTemplate = ({ register }: Props): ReactNode => {
                         {...register("username", { required: true })}
                     />
                 </Input>
-                <ErrorMessage>
-                    <BiError size={13} />
-                    Username is required
-                </ErrorMessage>
+                {errors.username && errors.username.message && (
+                    <ErrorMessage>
+                        <BiError size={13} />
+                        {errors.username.message}
+                    </ErrorMessage>
+                )}
             </InputContainer>
             <InputContainer>
                 <Input>
@@ -57,10 +62,12 @@ const RedisDataSourceTemplate = ({ register }: Props): ReactNode => {
                         {...register("password", { required: true })}
                     />
                 </Input>
-                <ErrorMessage>
-                    <BiError size={13} />
-                    Password is required
-                </ErrorMessage>
+                {errors.password && errors.password.message && (
+                    <ErrorMessage>
+                        <BiError size={13} />
+                        {errors.password.message}
+                    </ErrorMessage>
+                )}
             </InputContainer>
             <InputContainer>
                 <Input>
@@ -71,10 +78,12 @@ const RedisDataSourceTemplate = ({ register }: Props): ReactNode => {
                         {...register("database", { required: true })}
                     />
                 </Input>
-                <ErrorMessage>
-                    <BiError size={13} />
-                    Database is required
-                </ErrorMessage>
+                {errors.database && errors.database.message && (
+                    <ErrorMessage>
+                        <BiError size={13} />
+                        {errors.database.message}
+                    </ErrorMessage>
+                )}
             </InputContainer>
         </>
     );

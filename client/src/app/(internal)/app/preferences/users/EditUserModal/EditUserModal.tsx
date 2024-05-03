@@ -29,7 +29,9 @@ type Props = UserSchema & {
 };
 
 const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
-    const toastRef = useRef<ToastRefType>();
+    const toastSuccessRef = useRef<ToastRefType>();
+    const toastErrorRef = useRef<ToastRefType>();
+
     const [errorMessages, setErrorMessages] = useState<Array<string> | null>(null);
     const [role, setRole] = useState<"ADMIN" | "COMMON">(props.role);
 
@@ -44,7 +46,7 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
 
     useEffect((): void => {
         if (Object.keys(errors).length > 0) {
-            if (toastRef.current) toastRef.current.publish();
+            if (toastErrorRef.current) toastErrorRef.current.publish();
             setErrorMessages(Object.values(errors).map(error => error?.message) as string[]);
         }
     }, [errors]);
@@ -53,15 +55,19 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
         mutationFn: (variables: { id: string; data: EditUserSchema }) =>
             updateUser(variables.id, variables.data),
         onSuccess(_, variables) {
-            queryClient.setQueryData(["users"], (data: Array<UserSchema>) => [
-                ...data,
-                {
+            queryClient.setQueryData(["users"], (data: { users: Array<UserSchema> }) => {
+                const editedUserIndex = data.users.findIndex(user => user.id === props.id);
+                const updatedUsers = [...data.users];
+
+                updatedUsers[editedUserIndex] = {
                     id: props.id,
                     email: variables.data.email,
                     role: variables.data.role,
                     createdAt: props.createdAt,
-                },
-            ]);
+                };
+
+                return { users: updatedUsers };
+            });
         },
     });
 
@@ -81,10 +87,11 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
             );
 
             setOpen(false);
-            toastRef.current?.publish();
-        } catch {
+            toastSuccessRef.current?.publish();
+        } catch (err) {
+            console.log(err);
             setErrorMessages(["If you see this message, something went wrong"]);
-            if (toastRef.current) toastRef.current.publish();
+            if (toastErrorRef.current) toastErrorRef.current.publish();
         }
     };
 
@@ -141,7 +148,13 @@ const EditUserModal = ({ open, setOpen, ...props }: Props): ReactNode => {
             </Modal.Content>
 
             <Toast>
-                <Toast.Content ref={toastRef} variant="error">
+                <Toast.Content ref={toastSuccessRef} variant="success">
+                    <Toast.Title>User updated successfully</Toast.Title>
+                </Toast.Content>
+            </Toast>
+
+            <Toast>
+                <Toast.Content ref={toastErrorRef} variant="error">
                     <Toast.Title>An unexpected error occurred</Toast.Title>
                     <Toast.Description>
                         {errorMessages?.map((message, index) => (

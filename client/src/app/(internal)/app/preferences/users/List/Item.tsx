@@ -7,10 +7,13 @@ import { UserSchema } from "@/types/user";
 import { ReactNode, useState } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { TbDots } from "react-icons/tb";
+import { validate as IsValidUUID } from "uuid";
 
 import { Root, Email, Text, Actions } from "./Item.styles";
 
-type Props = UserSchema;
+type Props = UserSchema & {
+    isMe: boolean;
+};
 
 const Item = (props: Props): ReactNode => {
     const [modalEditOpen, setModalEditOpen] = useState<boolean>(false);
@@ -27,11 +30,14 @@ const Item = (props: Props): ReactNode => {
                         </Actions>
                     </Dropdown.Trigger>
                     <Dropdown.Content>
-                        <Dropdown.Item onClick={() => setModalEditOpen(true)}>
+                        <Dropdown.Item onClick={() => setModalEditOpen(true)} disabled={props.isMe}>
                             <MdEdit />
                             Edit user e-mail
                         </Dropdown.Item>
-                        <Dropdown.Item onClick={() => setModalDeleteOpen(true)}>
+                        <Dropdown.Item
+                            onClick={() => setModalDeleteOpen(true)}
+                            disabled={!IsValidUUID(props.id) || props.isMe}
+                        >
                             <MdDelete />
                             Delete user
                         </Dropdown.Item>
@@ -42,9 +48,6 @@ const Item = (props: Props): ReactNode => {
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <Text>
                     <strong>Role:</strong> {props.role}
-                </Text>
-                <Text>
-                    <strong>Criado em:</strong> {props.createdAt}
                 </Text>
             </div>
 

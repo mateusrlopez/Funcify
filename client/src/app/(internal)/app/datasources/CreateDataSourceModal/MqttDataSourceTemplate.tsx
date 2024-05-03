@@ -7,17 +7,20 @@ import { ErrorMessage, InputContainer } from "./CreateDataSourceModal.styles";
 
 type Props = {
     register: any;
+    errors: any;
 };
 
 const createMQTTDataSourceSchema = z.object({
     broker: z.string().min(1, { message: "Broker is required" }),
     qos: z
         .string()
-        .min(1, { message: "QoS is required" })
-        .transform(value => Number(value)),
+        .transform(value => Number(value))
+        .refine(value => value >= 0 && value <= 2, {
+            message: "QoS must be a number between 0 and 2",
+        }),
 });
 
-const MqttDataSourceTemplate = ({ register }: Props): ReactNode => (
+const MqttDataSourceTemplate = ({ register, errors }: Props): ReactNode => (
     <>
         <InputContainer>
             <Input>
@@ -28,10 +31,12 @@ const MqttDataSourceTemplate = ({ register }: Props): ReactNode => (
                     {...register("broker", { required: true })}
                 />
             </Input>
-            <ErrorMessage>
-                <BiError size={13} />
-                Broker is required
-            </ErrorMessage>
+            {errors.broker && errors.broker.message && (
+                <ErrorMessage>
+                    <BiError size={13} />
+                    {errors.broker.message}
+                </ErrorMessage>
+            )}
         </InputContainer>
         <InputContainer>
             <Input>
@@ -39,16 +44,19 @@ const MqttDataSourceTemplate = ({ register }: Props): ReactNode => (
                 <Input.Field
                     $tag="input"
                     type="number"
+                    defaultValue={0}
                     min={0}
                     max={2}
                     id="create-data-source-qos"
                     {...register("qos", { required: true })}
                 />
             </Input>
-            <ErrorMessage>
-                <BiError size={13} />
-                QoS is required
-            </ErrorMessage>
+            {errors.qos && errors.qos.message && (
+                <ErrorMessage>
+                    <BiError size={13} />
+                    {errors.qos.message}
+                </ErrorMessage>
+            )}
         </InputContainer>
     </>
 );

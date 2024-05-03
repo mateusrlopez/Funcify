@@ -15,7 +15,7 @@ import { z } from "zod";
 
 const setupSchema = z
     .object({
-        email: z.string().email().min(1, { message: "E-mail is required" }),
+        email: z.string({ required_error: "E-mail is required" }).email(),
         password: z.string().min(8, {
             message: "The password must contain at least 8 character(s)",
         }),
@@ -44,14 +44,13 @@ const Form = (): ReactNode => {
         resolver: zodResolver(setupSchema),
     });
     const router = useRouter();
-
     const toastRef = useRef<ToastRefType>();
 
     const onHandleSubmit: SubmitHandler<SetupSchema> = async data => {
         try {
             const { email, password } = data;
             await setup(email, password);
-            router.push("/app/functions", { scroll: false });
+            router.refresh();
         } catch {
             if (toastRef.current) toastRef.current.publish();
         }

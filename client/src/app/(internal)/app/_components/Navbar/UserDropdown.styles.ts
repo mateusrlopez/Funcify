@@ -38,8 +38,6 @@ export const User = styled.span`
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: ${theme.fontSize.default};
-        font-weight: ${theme.fontWeight.bold};
         color: ${theme.colors.white};
         cursor: pointer;
     `}

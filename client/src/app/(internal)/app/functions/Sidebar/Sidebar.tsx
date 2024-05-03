@@ -44,7 +44,7 @@ const Sidebar = (): ReactNode => {
         [pathname, router, searchParams]
     );
 
-    const itemsToRender = data?.functions.filter((fn: FunctionSchema) => {
+    const itemsToRender = data?.functions?.filter((fn: FunctionSchema) => {
         if (search) {
             return fn.name.toLowerCase().includes(search.toLowerCase());
         }
