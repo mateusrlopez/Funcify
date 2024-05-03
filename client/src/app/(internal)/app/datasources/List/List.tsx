@@ -19,7 +19,7 @@ const List = (): ReactNode => {
         queryFn: async () => getAllDataSources(),
     });
 
-    const itemsToRender = data?.dataSources.filter((dataSource: DataSourceSchema) => {
+    const itemsToRender = data?.dataSources?.filter((dataSource: DataSourceSchema) => {
         if (search) {
             return dataSource.name.toLowerCase().includes(search.toLowerCase());
         }

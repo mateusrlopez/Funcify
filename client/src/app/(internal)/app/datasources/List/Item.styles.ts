@@ -6,13 +6,13 @@ export const Root = styled.li`
     ${({ theme }) => css`
         width: 100%;
         height: max-content;
-        padding: 10px;
+        padding: 10px 10px 5px 15px;
         border: 1px solid ${theme.colors.darkestGray};
         border-left: 10px solid ${theme.colors.darkestGray};
         border-radius: 4px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 10px;
 
         &:hover {
             background: ${theme.colors.gray30};

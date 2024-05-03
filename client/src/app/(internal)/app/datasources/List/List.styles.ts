@@ -4,7 +4,7 @@ import styled, { css } from "styled-components";
 
 export const Root = styled.ul`
     width: 100%;
-    height: calc(100vh - 100px);
+    height: calc(100vh - 160px);
     display: flex;
     flex-direction: column;
     padding: 10px;
