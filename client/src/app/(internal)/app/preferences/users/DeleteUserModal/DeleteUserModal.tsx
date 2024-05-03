@@ -28,9 +28,9 @@ const DeleteUserModal = ({
     const { mutateAsync: deleteUserFn } = useMutation({
         mutationFn: deleteUser,
         onSuccess(_, variables) {
-            queryClient.setQueryData(["users"], (data: Array<UserSchema>) =>
-                data.filter(user => user.id !== variables)
-            );
+            queryClient.setQueryData(["users"], (data: { users: Array<UserSchema> }) => {
+                return { users: data.users?.filter(user => user.id !== variables) };
+            });
         },
     });
 
