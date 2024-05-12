@@ -5,9 +5,9 @@ import (
 	"errors"
 	"github.com/mateusrlopez/funcify/clients"
 	"github.com/mateusrlopez/funcify/entities"
-	"github.com/mateusrlopez/funcify/managers/disconnects"
+	"github.com/mateusrlopez/funcify/managers/disconnectors"
 	"github.com/mateusrlopez/funcify/managers/healthchecks"
-	"github.com/mateusrlopez/funcify/services"
+	"github.com/mateusrlopez/funcify/repositories"
 	"github.com/mateusrlopez/funcify/settings"
 	"github.com/rs/zerolog/log"
 	"time"
@@ -23,99 +23,59 @@ var (
 )
 
 type DataSource interface {
-	ExecuteExistingDataSources() error
-	Run()
-	Shutdown()
+	HandleNewDataSource(dataSource entities.DataSource) error
+	HandleUpdateDataSource(dataSource entities.DataSource) error
+	HandleDeleteDataSource(dataSource entities.DataSource) error
 	RetrieveConnection(id string) DataSourceConnection
+	StartExistingDataSources() error
 }
 
 type dataSourceImplementation struct {
-	dataSourceService                services.DataSources
-	dataSourceCreateChan             chan entities.DataSource
-	dataSourceUpdateChan             chan entities.DataSource
-	dataSourceDeleteChan             chan entities.DataSource
+	dataSourceRepository             repositories.DataSources
 	dataSourceHealthStatusChangeChan chan entities.DataSource
-	shutdownChan                     chan bool
 	dataSourceConnections            map[string]DataSourceConnection
-	dataSourceDisconnectFnMap        map[string]disconnects.DisconnectFunction
+	dataSourceDisconnectFnMap        map[string]disconnectors.DisconnectFunction
 	dataSourceHealthCheckCancelMap   map[string]context.CancelFunc
 }
 
-func NewDataSource(dataSourceService services.DataSources, dataSourceCreateChan, dataSourceUpdateChan, dataSourceDeleteChan, dataSourceHealthStatusChangeChan chan entities.DataSource) DataSource {
+func NewDataSource(dataSourceHealthStatusChangeChan chan entities.DataSource, dataSourceRepository repositories.DataSources) DataSource {
 	return &dataSourceImplementation{
-		dataSourceService:                dataSourceService,
-		dataSourceCreateChan:             dataSourceCreateChan,
-		dataSourceUpdateChan:             dataSourceUpdateChan,
-		dataSourceDeleteChan:             dataSourceDeleteChan,
+		dataSourceRepository:             dataSourceRepository,
 		dataSourceHealthStatusChangeChan: dataSourceHealthStatusChangeChan,
-		shutdownChan:                     make(chan bool),
 		dataSourceConnections:            make(map[string]DataSourceConnection),
-		dataSourceDisconnectFnMap:        make(map[string]disconnects.DisconnectFunction),
+		dataSourceDisconnectFnMap:        make(map[string]disconnectors.DisconnectFunction),
 		dataSourceHealthCheckCancelMap:   make(map[string]context.CancelFunc),
 	}
 }
 
-func (mgr *dataSourceImplementation) ExecuteExistingDataSources() error {
-	dataSources, err := mgr.dataSourceService.FindAll()
+func (mgr *dataSourceImplementation) StartExistingDataSources() error {
+	dataSources, err := mgr.dataSourceRepository.FindAll()
 
 	if err != nil {
 		return err
 	}
 
-	log.Debug().Int("total", len(dataSources)).Msg("starting the execution of the already existing data sources")
-
 	for _, dataSource := range dataSources {
-		mgr.handleNewDataSource(dataSource)
-	}
-
-	return nil
-}
-
-func (mgr *dataSourceImplementation) Run() {
-	for {
-		select {
-		case dataSource := <-mgr.dataSourceCreateChan:
-			go mgr.handleNewDataSource(dataSource)
-		case dataSource := <-mgr.dataSourceUpdateChan:
-			go mgr.handleUpdateDataSource(dataSource)
-		case dataSource := <-mgr.dataSourceDeleteChan:
-			go mgr.handleDeleteDataSource(dataSource)
-		case <-mgr.shutdownChan:
-			close(mgr.dataSourceCreateChan)
-			close(mgr.dataSourceUpdateChan)
-			close(mgr.dataSourceDeleteChan)
-
-			for _, cancel := range mgr.dataSourceHealthCheckCancelMap {
-				cancel()
-			}
-
-			for idx, disconnect := range mgr.dataSourceDisconnectFnMap {
-				connection := mgr.dataSourceConnections[idx]
-				disconnect(connection)
-			}
-
-			close(mgr.shutdownChan)
-			return
+		if err = mgr.HandleNewDataSource(dataSource); err != nil {
+			continue
 		}
 	}
-}
-
-func (mgr *dataSourceImplementation) Shutdown() {
-	mgr.shutdownChan <- true
+	
+	return nil
 }
 
 func (mgr *dataSourceImplementation) RetrieveConnection(id string) DataSourceConnection {
 	return mgr.dataSourceConnections[id]
 }
 
-func (mgr *dataSourceImplementation) handleNewDataSource(dataSource entities.DataSource) {
+func (mgr *dataSourceImplementation) HandleNewDataSource(dataSource entities.DataSource) error {
 	log.Debug().Str("id", dataSource.ID).Msg("starting handling of new data source")
 
 	connection, err := mgr.connectionByDataSourceType(dataSource.Type, dataSource.Configuration)
 
 	if err != nil {
 		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not start the new data source")
-		return
+		return err
 	}
 
 	mgr.dataSourceConnections[dataSource.ID] = DataSourceConnection{Type: dataSource.Type, Connection: connection}
@@ -124,7 +84,7 @@ func (mgr *dataSourceImplementation) handleNewDataSource(dataSource entities.Dat
 
 	if err != nil {
 		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not start the new data source")
-		return
+		return err
 	}
 
 	mgr.dataSourceDisconnectFnMap[dataSource.ID] = disconnectFn
@@ -133,7 +93,7 @@ func (mgr *dataSourceImplementation) handleNewDataSource(dataSource entities.Dat
 
 	if err != nil {
 		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not start the new data source")
-		return
+		return err
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -142,67 +102,72 @@ func (mgr *dataSourceImplementation) handleNewDataSource(dataSource entities.Dat
 	go mgr.healthCheck(dataSource, connection, healthCheckFn, ctx)
 
 	log.Debug().Str("id", dataSource.ID).Msg("successfully started connection to the data source")
-	return
+	return nil
 }
 
-func (mgr *dataSourceImplementation) handleUpdateDataSource(dataSource entities.DataSource) {
+func (mgr *dataSourceImplementation) HandleUpdateDataSource(dataSource entities.DataSource) error {
 	log.Debug().Str("id", dataSource.ID).Msg("starting handling of update of a data source")
-
-	connection := mgr.dataSourceConnections[dataSource.ID]
-
-	disconnectFn := mgr.dataSourceDisconnectFnMap[dataSource.ID]
-	disconnectFn(connection)
-
-	cancel := mgr.dataSourceHealthCheckCancelMap[dataSource.ID]
-	cancel()
 
 	newConnection, err := mgr.connectionByDataSourceType(dataSource.Type, dataSource.Configuration)
 
 	if err != nil {
 		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not update the data source")
-		return
+		return err
 	}
-
-	mgr.dataSourceConnections[dataSource.ID] = DataSourceConnection{Type: dataSource.Type, Connection: newConnection}
 
 	newDisconnectFn, err := mgr.disconnectFunctionByDataSourceType(dataSource.Type)
 
 	if err != nil {
 		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not update the data source")
-		return
+		return err
 	}
 
-	mgr.dataSourceDisconnectFnMap[dataSource.ID] = newDisconnectFn
+	oldConnection := mgr.dataSourceConnections[dataSource.ID]
 
-	healthCheckFn, err := mgr.healthCheckFunctionByDataSourceType(dataSource.Type)
+	oldDisconnectFn := mgr.dataSourceDisconnectFnMap[dataSource.ID]
+	if err = oldDisconnectFn(oldConnection); err != nil {
+		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not disconnect to the data source")
+		return err
+	}
+
+	oldCancel := mgr.dataSourceHealthCheckCancelMap[dataSource.ID]
+	oldCancel()
+
+	ctx, newCancel := context.WithCancel(context.Background())
+
+	mgr.dataSourceConnections[dataSource.ID] = DataSourceConnection{Type: dataSource.Type, Connection: newConnection}
+	mgr.dataSourceDisconnectFnMap[dataSource.ID] = newDisconnectFn
+	mgr.dataSourceHealthCheckCancelMap[dataSource.ID] = newCancel
+
+	newHealthCheckFn, err := mgr.healthCheckFunctionByDataSourceType(dataSource.Type)
 
 	if err != nil {
 		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not update the data source")
-		return
+		return err
 	}
 
-	ctx, newCancel := context.WithCancel(context.Background())
-	mgr.dataSourceHealthCheckCancelMap[dataSource.ID] = newCancel
-
-	go mgr.healthCheck(dataSource, newConnection, healthCheckFn, ctx)
+	go mgr.healthCheck(dataSource, newConnection, newHealthCheckFn, ctx)
 
 	log.Debug().Str("id", dataSource.ID).Msg("successfully updated connection to the data source")
-	return
+	return nil
 }
 
-func (mgr *dataSourceImplementation) handleDeleteDataSource(dataSource entities.DataSource) {
+func (mgr *dataSourceImplementation) HandleDeleteDataSource(dataSource entities.DataSource) error {
 	log.Debug().Str("id", dataSource.ID).Msg("starting handling of deletion of a data source")
 
 	connection := mgr.dataSourceConnections[dataSource.ID]
 
 	disconnectFn := mgr.dataSourceDisconnectFnMap[dataSource.ID]
-	disconnectFn(connection)
+	if err := disconnectFn(connection); err != nil {
+		log.Error().Err(err).Str("id", dataSource.ID).Msg("could not disconnect to the data source")
+		return err
+	}
 
 	cancel := mgr.dataSourceHealthCheckCancelMap[dataSource.ID]
 	cancel()
 
 	log.Debug().Str("id", dataSource.ID).Msg("successfully deleted connection to the data source")
-	return
+	return nil
 }
 
 func (mgr *dataSourceImplementation) connectionByDataSourceType(dataSourceType string, configuration map[string]interface{}) (interface{}, error) {
@@ -230,13 +195,15 @@ func (mgr *dataSourceImplementation) healthCheckFunctionByDataSourceType(dataSou
 	switch dataSourceType {
 	case entities.RedisDataSource:
 		return healthchecks.RedisHealthCheckFn, nil
+	case entities.MqttDataSource:
+		return healthchecks.MqttHealthCheckFn, nil
 	default:
 		return nil, ErrDataSourceNotImplemented
 	}
 }
 
 func (mgr *dataSourceImplementation) healthCheck(dataSource entities.DataSource, connection interface{}, healthCheckFn healthchecks.HealthCheckFn, ctx context.Context) {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(1 * time.Minute)
 
 	for {
 		select {
@@ -248,22 +215,22 @@ func (mgr *dataSourceImplementation) healthCheck(dataSource entities.DataSource,
 			if err := healthCheckFn(connection); err != nil && dataSource.HealthStatus != entities.UnhealthyDataSourceHealthStatus {
 				log.Debug().Str("id", dataSource.ID).Msg("data source is now unhealthy")
 
-				dataSource, err = mgr.dataSourceService.UpdateOne(dataSource, entities.DataSource{HealthStatus: entities.UnhealthyDataSourceHealthStatus})
+				dataSource, err = mgr.dataSourceRepository.UpdateOne(dataSource, entities.DataSource{HealthStatus: entities.UnhealthyDataSourceHealthStatus})
 
 				if err != nil {
 					log.Error().Err(err).Str("id", dataSource.ID).Msg("could not update the health status of the data source in the database")
-					return
+					continue
 				}
 
 				mgr.dataSourceHealthStatusChangeChan <- dataSource
 			} else if err == nil && dataSource.HealthStatus != entities.HealthyDataSourceHealthStatus {
 				log.Debug().Str("id", dataSource.ID).Msg("data source is now healthy")
 
-				dataSource, err = mgr.dataSourceService.UpdateOne(dataSource, entities.DataSource{HealthStatus: entities.HealthyDataSourceHealthStatus})
+				dataSource, err = mgr.dataSourceRepository.UpdateOne(dataSource, entities.DataSource{HealthStatus: entities.HealthyDataSourceHealthStatus})
 
 				if err != nil {
 					log.Error().Err(err).Str("id", dataSource.ID).Msg("could not update the health status of the data source in the database")
-					return
+					continue
 				}
 
 				mgr.dataSourceHealthStatusChangeChan <- dataSource
@@ -274,10 +241,12 @@ func (mgr *dataSourceImplementation) healthCheck(dataSource entities.DataSource,
 	}
 }
 
-func (mgr *dataSourceImplementation) disconnectFunctionByDataSourceType(dataSourceType string) (disconnects.DisconnectFunction, error) {
+func (mgr *dataSourceImplementation) disconnectFunctionByDataSourceType(dataSourceType string) (disconnectors.DisconnectFunction, error) {
 	switch dataSourceType {
 	case entities.RedisDataSource:
-		return disconnects.RedisDisconnectionFn, nil
+		return disconnectors.RedisDisconnectFn, nil
+	case entities.MqttDataSource:
+		return disconnectors.MQTTDisconnectFn, nil
 	default:
 		return nil, ErrDataSourceNotImplemented
 	}

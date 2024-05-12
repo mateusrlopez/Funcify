@@ -3,9 +3,8 @@ package entities
 import "time"
 
 const (
-	CreatingFunctionStatus = "CREATING"
-	RunningFunctionStatus  = "RUNNING"
-	ErrorFunctionStatus    = "ERROR"
+	RunningFunctionStatus = "RUNNING"
+	ErrorFunctionStatus   = "ERROR"
 )
 
 type Function struct {

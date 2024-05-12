@@ -2,7 +2,9 @@ package services
 
 import (
 	"github.com/mateusrlopez/funcify/entities"
+	"github.com/mateusrlopez/funcify/managers"
 	"github.com/mateusrlopez/funcify/repositories"
+	"github.com/mateusrlopez/funcify/utils"
 )
 
 type DataSources interface {
@@ -10,34 +12,33 @@ type DataSources interface {
 	FindAll() ([]entities.DataSource, error)
 	FindOneByID(id string) (entities.DataSource, error)
 	UpdateOneByID(id string, data entities.DataSource) (entities.DataSource, error)
-	UpdateOne(dataSource, data entities.DataSource) (entities.DataSource, error)
 	DeleteOneByID(id string) error
 }
 
 type dataSourcesImplementation struct {
 	dataSourcesRepository repositories.DataSources
-	dataSourceCreateChan  chan entities.DataSource
-	dataSourceUpdateChan  chan entities.DataSource
-	dataSourceDeleteChan  chan entities.DataSource
+	dataSourcesManager    managers.DataSource
 }
 
-func NewDataSources(dataSourceRepository repositories.DataSources, dataSourceCreateChan, dataSourceUpdateChan, dataSourceDeleteChan chan entities.DataSource) DataSources {
+func NewDataSources(dataSourceRepository repositories.DataSources, dataSourcesManager managers.DataSource) DataSources {
 	return dataSourcesImplementation{
 		dataSourcesRepository: dataSourceRepository,
-		dataSourceCreateChan:  dataSourceCreateChan,
-		dataSourceUpdateChan:  dataSourceUpdateChan,
-		dataSourceDeleteChan:  dataSourceDeleteChan,
+		dataSourcesManager:    dataSourcesManager,
 	}
 }
 
 func (s dataSourcesImplementation) Create(dataSource entities.DataSource) (entities.DataSource, error) {
+	dataSource.ID = utils.GenerateUUID()
+
+	if err := s.dataSourcesManager.HandleNewDataSource(dataSource); err != nil {
+		return entities.DataSource{}, err
+	}
+
 	created, err := s.dataSourcesRepository.Insert(dataSource)
 
 	if err != nil {
 		return entities.DataSource{}, err
 	}
-
-	s.dataSourceCreateChan <- created
 
 	return created, nil
 }
@@ -69,19 +70,18 @@ func (s dataSourcesImplementation) UpdateOneByID(id string, data entities.DataSo
 		return entities.DataSource{}, err
 	}
 
+	data.ID = id
+	if err = s.dataSourcesManager.HandleUpdateDataSource(data); err != nil {
+		return entities.DataSource{}, err
+	}
+
 	updated, err := s.dataSourcesRepository.UpdateOne(dataSource, data)
 
 	if err != nil {
 		return entities.DataSource{}, err
 	}
 
-	s.dataSourceUpdateChan <- updated
-
 	return updated, nil
-}
-
-func (s dataSourcesImplementation) UpdateOne(dataSource, data entities.DataSource) (entities.DataSource, error) {
-	return s.dataSourcesRepository.UpdateOne(dataSource, data)
 }
 
 func (s dataSourcesImplementation) DeleteOneByID(id string) error {
@@ -91,11 +91,13 @@ func (s dataSourcesImplementation) DeleteOneByID(id string) error {
 		return err
 	}
 
-	if err = s.dataSourcesRepository.DeleteOne(dataSource); err != nil {
+	if err = s.dataSourcesManager.HandleDeleteDataSource(dataSource); err != nil {
 		return err
 	}
 
-	s.dataSourceDeleteChan <- dataSource
+	if err = s.dataSourcesRepository.DeleteOne(dataSource); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -3,6 +3,8 @@ package services
 import (
 	"github.com/mateusrlopez/funcify/entities"
 	"github.com/mateusrlopez/funcify/repositories"
+	"github.com/mateusrlopez/funcify/runtimes"
+	"github.com/mateusrlopez/funcify/utils"
 )
 
 type Functions interface {
@@ -10,34 +12,33 @@ type Functions interface {
 	FindAll() ([]entities.Function, error)
 	FindOneByID(id string) (entities.Function, error)
 	UpdateOneByID(id string, data entities.Function) (entities.Function, error)
-	UpdateOne(function, data entities.Function) (entities.Function, error)
 	DeleteOneByID(id string) error
 }
 
 type functionsImplementation struct {
 	functionsRepository repositories.Functions
-	fnCreateChan        chan entities.Function
-	fnUpdateChan        chan entities.Function
-	fnDeleteChan        chan entities.Function
+	runtime             runtimes.Function
 }
 
-func NewFunctions(functionRepository repositories.Functions, fnCreateChan, fnUpdateChan, fnDeleteChan chan entities.Function) Functions {
+func NewFunctions(functionRepository repositories.Functions, runtime runtimes.Function) Functions {
 	return functionsImplementation{
 		functionsRepository: functionRepository,
-		fnCreateChan:        fnCreateChan,
-		fnUpdateChan:        fnUpdateChan,
-		fnDeleteChan:        fnDeleteChan,
+		runtime:             runtime,
 	}
 }
 
 func (s functionsImplementation) Create(function entities.Function) (entities.Function, error) {
+	function.ID = utils.GenerateUUID()
+
+	if err := s.runtime.HandleNewFunction(function); err != nil {
+		return entities.Function{}, nil
+	}
+
 	created, err := s.functionsRepository.Insert(function)
 
 	if err != nil {
 		return entities.Function{}, err
 	}
-
-	s.fnCreateChan <- created
 
 	return created, nil
 }
@@ -69,13 +70,16 @@ func (s functionsImplementation) UpdateOneByID(id string, data entities.Function
 		return entities.Function{}, err
 	}
 
+	data.ID = id
+	if err = s.runtime.HandleFunctionUpdate(data); err != nil {
+		return entities.Function{}, err
+	}
+
 	updated, err := s.functionsRepository.UpdateOne(function, data)
 
 	if err != nil {
 		return entities.Function{}, err
 	}
-
-	s.fnUpdateChan <- updated
 
 	return updated, nil
 }
@@ -91,11 +95,11 @@ func (s functionsImplementation) DeleteOneByID(id string) error {
 		return err
 	}
 
+	s.runtime.HandleFunctionDelete(function)
+
 	if err = s.functionsRepository.DeleteOne(function); err != nil {
 		return err
 	}
-
-	s.fnDeleteChan <- function
 
 	return nil
 }

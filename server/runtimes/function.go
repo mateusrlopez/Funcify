@@ -6,8 +6,8 @@ import (
 	"github.com/dop251/goja"
 	"github.com/mateusrlopez/funcify/entities"
 	"github.com/mateusrlopez/funcify/managers"
+	"github.com/mateusrlopez/funcify/repositories"
 	"github.com/mateusrlopez/funcify/runtimes/connectors"
-	"github.com/mateusrlopez/funcify/services"
 	"github.com/mateusrlopez/funcify/settings"
 	"github.com/rs/zerolog/log"
 )
@@ -17,80 +17,45 @@ var (
 )
 
 type Function interface {
-	ExecuteExistingFunctions() error
-	Run()
-	Shutdown()
+	HandleNewFunction(function entities.Function) error
+	HandleFunctionUpdate(function entities.Function) error
+	HandleFunctionDelete(function entities.Function)
+	StartExistingFunctions() error
 }
 
 type functionImplementation struct {
-	functionsService   services.Functions
-	dataSourceManager  managers.DataSource
-	fnCreateChan       chan entities.Function
-	fnUpdateChan       chan entities.Function
-	fnDeleteChan       chan entities.Function
-	fnStatusChangeChan chan entities.Function
-	shutdownChan       chan bool
-	fnCancelMap        map[string]context.CancelFunc
+	functionsRepository repositories.Functions
+	dataSourceManager   managers.DataSource
+	fnStatusChangeChan  chan entities.Function
+	fnCancelMap         map[string]context.CancelFunc
 }
 
-func NewRuntime(functionsService services.Functions, dataSourceManager managers.DataSource, fnCreateChan, fnUpdateChan, fnDeleteChan, fnStatusChangeChan chan entities.Function) Function {
+func NewRuntime(functionsRepository repositories.Functions, dataSourceManager managers.DataSource, fnStatusChangeChan chan entities.Function) Function {
 	return &functionImplementation{
-		functionsService:   functionsService,
-		fnStatusChangeChan: fnStatusChangeChan,
-		fnCreateChan:       fnCreateChan,
-		fnUpdateChan:       fnUpdateChan,
-		fnDeleteChan:       fnDeleteChan,
-		dataSourceManager:  dataSourceManager,
-		shutdownChan:       make(chan bool),
-		fnCancelMap:        make(map[string]context.CancelFunc),
+		functionsRepository: functionsRepository,
+		fnStatusChangeChan:  fnStatusChangeChan,
+		dataSourceManager:   dataSourceManager,
+		fnCancelMap:         make(map[string]context.CancelFunc),
 	}
 }
 
-func (r *functionImplementation) ExecuteExistingFunctions() error {
-	functions, err := r.functionsService.FindAll()
+func (r *functionImplementation) StartExistingFunctions() error {
+	functions, err := r.functionsRepository.FindAll()
 
 	if err != nil {
 		return err
 	}
 
-	log.Debug().Int("total", len(functions)).Msg("starting the execution of the already existing functions")
-
-	for _, function := range functions {
-		r.handleNewFunction(function)
+	for _, fn := range functions {
+		if err = r.HandleNewFunction(fn); err != nil {
+			continue
+		}
 	}
 
 	return nil
 }
 
-func (r *functionImplementation) Run() {
-	for {
-		select {
-		case function := <-r.fnCreateChan:
-			go r.handleNewFunction(function)
-		case function := <-r.fnUpdateChan:
-			go r.handleFunctionUpdate(function)
-		case function := <-r.fnDeleteChan:
-			go r.handleFunctionDelete(function)
-		case <-r.shutdownChan:
-			close(r.fnCreateChan)
-			close(r.fnUpdateChan)
-			close(r.fnDeleteChan)
-
-			for _, cancel := range r.fnCancelMap {
-				cancel()
-			}
-
-			close(r.shutdownChan)
-			return
-		}
-	}
-}
-
-func (r *functionImplementation) Shutdown() {
-	r.shutdownChan <- true
-}
-
-func (r *functionImplementation) handleNewFunction(function entities.Function) {
+func (r *functionImplementation) HandleNewFunction(function entities.Function) error {
 	log.Debug().Str("id", function.ID).Msg("starting handle of new function")
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -103,15 +68,7 @@ func (r *functionImplementation) handleNewFunction(function entities.Function) {
 
 	if err != nil {
 		log.Error().Err(err).Str("id", function.ID).Str("dataSourceType", inputConnection.Type).Msg("could not instantiate the new function input connector")
-
-		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
-		if err != nil {
-			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-			return
-		}
-
-		r.fnStatusChangeChan <- function
-		return
+		return err
 	}
 
 	outputConnection := r.dataSourceManager.RetrieveConnection(function.OutputConnectorDataSourceID)
@@ -119,15 +76,7 @@ func (r *functionImplementation) handleNewFunction(function entities.Function) {
 
 	if err != nil {
 		log.Error().Err(err).Str("id", function.ID).Str("dataSourceType", outputConnection.Type).Msg("could not instantiate the new function output connector")
-
-		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
-		if err != nil {
-			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-			return
-		}
-
-		r.fnStatusChangeChan <- function
-		return
+		return err
 	}
 
 	inputDataChan := make(chan []byte)
@@ -137,26 +86,13 @@ func (r *functionImplementation) handleNewFunction(function entities.Function) {
 	go outputConnector.Publish(outputDataChan, errorChan, ctx)
 	go inputConnector.Listen(inputDataChan, errorChan, ctx)
 
-	function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.RunningFunctionStatus})
-	if err != nil {
-		log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-		return
-	}
-
 	log.Debug().Str("id", function.ID).Msg("function is running")
 
-	r.fnStatusChangeChan <- function
-	return
+	return err
 }
 
-func (r *functionImplementation) handleFunctionUpdate(function entities.Function) {
+func (r *functionImplementation) HandleFunctionUpdate(function entities.Function) error {
 	log.Debug().Str("id", function.ID).Msg("starting process to update the execution of the function")
-
-	oldCancel := r.fnCancelMap[function.ID]
-	oldCancel()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	r.fnCancelMap[function.ID] = cancel
 
 	errorChan := make(chan error)
 
@@ -166,14 +102,14 @@ func (r *functionImplementation) handleFunctionUpdate(function entities.Function
 	if err != nil {
 		log.Error().Err(err).Str("dataSourceType", inputConnection.Type).Str("id", function.ID).Msg("could not instantiate the new function input connector")
 
-		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
+		function, err = r.functionsRepository.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
 		if err != nil {
 			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-			return
+			return err
 		}
 
 		r.fnStatusChangeChan <- function
-		return
+		return err
 	}
 
 	outputConnection := r.dataSourceManager.RetrieveConnection(function.InputConnectorDataSourceID)
@@ -182,35 +118,42 @@ func (r *functionImplementation) handleFunctionUpdate(function entities.Function
 	if err != nil {
 		log.Error().Err(err).Str("dataSourceType", outputConnection.Type).Str("id", function.ID).Msg("could not instantiate the new function output connector")
 
-		function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
+		function, err = r.functionsRepository.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
 		if err != nil {
 			log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-			return
+			return err
 		}
 
 		r.fnStatusChangeChan <- function
-		return
+		return err
 	}
 
 	inputDataChan := make(chan []byte)
 	outputDataChan := make(chan []byte)
 
+	oldCancel := r.fnCancelMap[function.ID]
+	oldCancel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	r.fnCancelMap[function.ID] = cancel
+
 	go r.runFunction(function, inputDataChan, outputDataChan, errorChan, ctx)
 	go outputConnector.Publish(outputDataChan, errorChan, ctx)
 	go inputConnector.Listen(inputDataChan, errorChan, ctx)
 
-	function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.RunningFunctionStatus})
+	function, err = r.functionsRepository.UpdateOne(function, entities.Function{Status: entities.RunningFunctionStatus})
 	if err != nil {
 		log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-		return
+		return err
 	}
 
 	log.Debug().Str("id", function.ID).Msg("function is running")
 
 	r.fnStatusChangeChan <- function
+	return nil
 }
 
-func (r *functionImplementation) handleFunctionDelete(function entities.Function) {
+func (r *functionImplementation) HandleFunctionDelete(function entities.Function) {
 	log.Debug().Str("id", function.ID).Msg("starting process to kill the execution of the function")
 
 	cancel := r.fnCancelMap[function.ID]
@@ -227,14 +170,14 @@ func (r *functionImplementation) runFunction(function entities.Function, inputDa
 		case err := <-errorChan:
 			log.Error().Err(err).Str("id", function.ID).Msg("received error from connector")
 
-			updated, err := r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
+			updated, err := r.functionsRepository.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
 			if err != nil {
 				log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-				return
+				continue
 			}
 
 			r.fnStatusChangeChan <- updated
-			return
+			continue
 		case data := <-inputDataChan:
 			log.Debug().Str("id", function.ID).Bytes("data", data).Msg("received data from input")
 
@@ -245,14 +188,14 @@ func (r *functionImplementation) runFunction(function entities.Function, inputDa
 			if err != nil {
 				log.Error().Err(err).Str("id", function.ID).Msg("error executing function")
 
-				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
+				function, err = r.functionsRepository.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
 				if err != nil {
 					log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-					return
+					continue
 				}
 
 				r.fnStatusChangeChan <- function
-				return
+				continue
 			}
 
 			fn, ok := goja.AssertFunction(vm.Get(function.MethodToExecute))
@@ -260,14 +203,14 @@ func (r *functionImplementation) runFunction(function entities.Function, inputDa
 			if !ok {
 				log.Error().Str("id", function.ID).Msg("error executing function")
 
-				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
+				function, err = r.functionsRepository.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
 				if err != nil {
 					log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-					return
+					continue
 				}
 
 				r.fnStatusChangeChan <- function
-				return
+				continue
 			}
 
 			res, err := fn(goja.Undefined(), vm.ToValue(string(data)))
@@ -275,14 +218,14 @@ func (r *functionImplementation) runFunction(function entities.Function, inputDa
 			if err != nil {
 				log.Error().Err(err).Str("id", function.ID).Msg("error executing function")
 
-				function, err = r.functionsService.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
+				function, err = r.functionsRepository.UpdateOne(function, entities.Function{Status: entities.ErrorFunctionStatus})
 				if err != nil {
 					log.Error().Err(err).Str("id", function.ID).Msg("could not update function status")
-					return
+					continue
 				}
 
 				r.fnStatusChangeChan <- function
-				return
+				continue
 			}
 
 			log.Debug().Str("id", function.ID).Str("data", res.String()).Msg("sending processed data to output")
