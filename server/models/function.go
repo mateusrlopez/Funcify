@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"github.com/mateusrlopez/funcify/entities"
-	"github.com/mateusrlopez/funcify/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -76,7 +75,6 @@ func (Function) TableName() string {
 }
 
 func (f *Function) BeforeCreate(tx *gorm.DB) error {
-	f.ID = utils.GenerateUUID()
-	f.Status = entities.CreatingFunctionStatus
+	f.Status = entities.RunningFunctionStatus
 	return nil
 }

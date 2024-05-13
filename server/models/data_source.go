@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"github.com/mateusrlopez/funcify/entities"
-	"github.com/mateusrlopez/funcify/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -62,6 +61,6 @@ func (DataSource) TableName() string {
 }
 
 func (ds *DataSource) BeforeCreate(tx *gorm.DB) error {
-	ds.ID = utils.GenerateUUID()
+	ds.HealthStatus = entities.HealthyDataSourceHealthStatus
 	return nil
 }

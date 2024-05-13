@@ -58,14 +58,7 @@ func main() {
 		log.Fatal().Err(err).Msg("could not create the database tables")
 	}
 
-	dataSourceCreateChan := make(chan entities.DataSource)
-	dataSourceUpdateChan := make(chan entities.DataSource)
-	dataSourceDeleteChan := make(chan entities.DataSource)
-	dataSourceChangeStatusChan := make(chan entities.DataSource)
-
-	fnCreateChan := make(chan entities.Function)
-	fnUpdateChan := make(chan entities.Function)
-	fnDeleteChan := make(chan entities.Function)
+	dataSourceHealthStatusChangeChan := make(chan entities.DataSource)
 	fnStatusChangeChan := make(chan entities.Function)
 
 	dataSourcesRepository := repositories.NewDataSources(db)
@@ -73,14 +66,26 @@ func main() {
 	sessionsRepository := repositories.NewSessions(db)
 	usersRepository := repositories.NewUsers(db)
 
-	dataSourcesService := services.NewDataSources(dataSourcesRepository, dataSourceCreateChan, dataSourceUpdateChan, dataSourceDeleteChan)
-	functionsService := services.NewFunctions(functionsRepository, fnCreateChan, fnUpdateChan, fnDeleteChan)
+	dataSourceManager := managers.NewDataSource(dataSourceHealthStatusChangeChan, dataSourcesRepository)
+
+	if err = dataSourceManager.StartExistingDataSources(); err != nil {
+		log.Fatal().Err(err).Msg("could not start the existing data sources")
+	}
+
+	functionRuntime := runtimes.NewRuntime(functionsRepository, dataSourceManager, fnStatusChangeChan)
+
+	if err = functionRuntime.StartExistingFunctions(); err != nil {
+		log.Fatal().Err(err).Msg("could not start the existing functions")
+	}
+
+	dataSourcesService := services.NewDataSources(dataSourcesRepository, dataSourceManager)
+	functionsService := services.NewFunctions(functionsRepository, functionRuntime)
 	usersService := services.NewUsers(usersRepository, utils.HashPassword)
 	sessionsService := services.NewSessions(sessionsRepository)
 	authService := services.NewAuth(sessionsService, usersService, utils.CompareHashToRaw)
 
 	authHandler := handlers.NewAuth(authService)
-	dataSourcesHandler := handlers.NewDataSources(dataSourcesService, dataSourceChangeStatusChan)
+	dataSourcesHandler := handlers.NewDataSources(dataSourcesService, dataSourceHealthStatusChangeChan)
 	functionsHandler := handlers.NewFunctions(functionsService, fnStatusChangeChan)
 	setupHandler := handlers.NewSetup(sessionsService, usersService)
 	usersHandler := handlers.NewUsers(usersService)
@@ -98,22 +103,6 @@ func main() {
 			log.Fatal().Err(err).Msg("could not start the server")
 		}
 	}()
-
-	manager := managers.NewDataSource(dataSourcesService, dataSourceCreateChan, dataSourceUpdateChan, dataSourceDeleteChan, dataSourceChangeStatusChan)
-	if err = manager.ExecuteExistingDataSources(); err != nil {
-		log.Fatal().Err(err).Msg("could not start the instantiation of the connections for the existing data sources in database")
-	}
-
-	go manager.Run()
-	defer manager.Shutdown()
-
-	runtime := runtimes.NewRuntime(functionsService, manager, fnCreateChan, fnUpdateChan, fnDeleteChan, fnStatusChangeChan)
-	if err = runtime.ExecuteExistingFunctions(); err != nil {
-		log.Fatal().Err(err).Msg("could not start the execution of the already existing functions in database")
-	}
-
-	go runtime.Run()
-	defer runtime.Shutdown()
 
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
