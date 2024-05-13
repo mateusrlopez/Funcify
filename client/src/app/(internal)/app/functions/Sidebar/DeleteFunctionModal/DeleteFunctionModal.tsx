@@ -2,8 +2,11 @@ import { Footer } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionMod
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
+import { Toast } from "@/components/Toast";
+import { deleteFunction } from "@/repository/functionRepository";
 import { FunctionSchema } from "@/types/function";
-import { ChangeEvent, PropsWithChildren, ReactNode, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ChangeEvent, PropsWithChildren, ReactNode, useRef, useState } from "react";
 import { MdDelete } from "react-icons/md";
 
 type Props = {
@@ -15,7 +18,41 @@ const DeleteFunctionModal = ({
     children,
     ...props
 }: PropsWithChildren<FunctionSchema & Props>): ReactNode => {
+    const queryClient = useQueryClient();
+    const toastErrorRef = useRef<ToastRefType>();
+
     const [inputValue, setInputValue] = useState("");
+    const [toastContent, setToastContent] = useState({ title: "", message: "" });
+
+    const { mutateAsync: deleteFunctionFn } = useMutation({
+        mutationFn: deleteFunction,
+        onSuccess(_, variables) {
+            queryClient.setQueryData(
+                ["functions"],
+                (data: { functions: Array<FunctionSchema> }) => {
+                    const { functions } = data;
+                    const newFunctions = functions.filter(item => item.id !== variables);
+                    return { functions: newFunctions };
+                }
+            );
+        },
+    });
+
+    const onHandleSubmit = async (): Promise<void> => {
+        try {
+            await deleteFunctionFn(props.id);
+            setToastContent({
+                title: "Function deleted",
+                message: `The function "${props.name}" was deleted`,
+            });
+        } catch {
+            setToastContent({
+                title: "An error occurred",
+                message: `The function "${props.name}" could not be deleted`,
+            });
+            toastErrorRef.current?.publish();
+        }
+    };
 
     return (
         <Modal open={props.open} onOpenChange={() => props.setOpen(false)}>
@@ -40,12 +77,10 @@ const DeleteFunctionModal = ({
                         </Input>
 
                         <Footer>
-                            <Modal.Content.Body.Action>
-                                <Button disabled={inputValue !== props.name}>
-                                    <MdDelete size={20} />
-                                    Delete
-                                </Button>
-                            </Modal.Content.Body.Action>
+                            <Button disabled={inputValue !== props.name} onClick={onHandleSubmit}>
+                                <MdDelete size={20} />
+                                Delete
+                            </Button>
                             <Modal.Content.Body.Cancel>
                                 <Button $variant="secondary">Cancel</Button>
                             </Modal.Content.Body.Cancel>
@@ -53,6 +88,13 @@ const DeleteFunctionModal = ({
                     </div>
                 </Modal.Content.Body>
             </Modal.Content>
+
+            <Toast>
+                <Toast.Content ref={toastErrorRef} variant="error">
+                    <Toast.Title>{toastContent.title}</Toast.Title>
+                    <Toast.Description>{toastContent.message}</Toast.Description>
+                </Toast.Content>
+            </Toast>
         </Modal>
     );
 };

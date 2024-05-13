@@ -1,59 +1,63 @@
 import { Input } from "@/components/Input";
-import { DataSourceSchema } from "@/types/dataSource";
-import { ReactElement } from "react";
+import { ChangeEvent, ReactElement } from "react";
+import { z } from "zod";
 
-import { InputContainer, ErrorMessage } from "./CreateFunctionModal.styles";
+import { InputContainer } from "./CreateFunctionModal.styles";
 
 type Props = {
-    register: any;
     type: "input" | "output";
-    dataSource: DataSourceSchema;
+    setFormData: (value: any) => void;
 };
 
-const RedisDataSourceTemplate = ({ register, type, dataSource }: Props): ReactElement => (
-    <InputContainer>
-        <Input>
-            <Input.Label fieldId="create-function-ds-address">Address</Input.Label>
-            <Input.Field
-                $tag="input"
-                id="create-function-ds-address"
-                // @ts-ignore
-                defaultValue={dataSource.configuration.address}
-                disabled
-            />
-        </Input>
-        <Input>
-            <Input.Label fieldId="create-function-ds-username">Username</Input.Label>
-            <Input.Field
-                $tag="input"
-                id="create-function-ds-username"
-                // @ts-ignore
-                defaultValue={dataSource.configuration.username}
-                disabled
-            />
-        </Input>
-        <Input>
-            <Input.Label fieldId="create-function-ds-database">Database</Input.Label>
-            <Input.Field
-                $tag="input"
-                id="create-function-ds-database"
-                // @ts-ignore
-                defaultValue={dataSource.configuration.database}
-                disabled
-            />
-        </Input>
-        <Input>
-            <Input.Label fieldId="create-function-ds-channel">Channel</Input.Label>
-            <Input.Field
-                $tag="input"
-                id="create-function-ds-channel"
-                placeholder="e.g. input"
-                defaultValue="a"
-                {...register(`${type}_channel`)}
-            />
-        </Input>
-        <ErrorMessage>Channel is required</ErrorMessage>
-    </InputContainer>
-);
+const createRedisDataSourceSchema = z.object({
+    channel: z.string().min(1, { message: "Channel is required" }),
+});
 
-export { RedisDataSourceTemplate };
+const RedisDataSourceTemplate = ({ type, setFormData }: Props): ReactElement => {
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        const { name, value } = e.target;
+
+        if (type === "input") {
+            setFormData((prevData: any) => ({
+                ...prevData,
+                inputConnectorConfiguration: {
+                    ...prevData.inputConnectorConfiguration,
+                    type: "Redis",
+                    [name]: value,
+                },
+            }));
+        } else {
+            setFormData((prevData: any) => ({
+                ...prevData,
+                outputConnectorConfiguration: {
+                    ...prevData.outputConnectorConfiguration,
+                    type: "Redis",
+                    [name]: value,
+                },
+            }));
+        }
+    };
+
+    return (
+        <InputContainer>
+            <Input>
+                <Input.Label fieldId="create-function-ds-channel">Channel</Input.Label>
+                <Input.Field
+                    $tag="input"
+                    id="create-function-ds-channel"
+                    name="channel"
+                    placeholder="e.g. input"
+                    onChange={handleInputChange}
+                />
+            </Input>
+            {/* {errors.channel && errors.channel.message && ( */}
+            {/*    <ErrorMessage> */}
+            {/*        <BiError size={13} /> */}
+            {/*        {errors.channel.message} */}
+            {/*    </ErrorMessage> */}
+            {/* )} */}
+        </InputContainer>
+    );
+};
+
+export { RedisDataSourceTemplate, createRedisDataSourceSchema };

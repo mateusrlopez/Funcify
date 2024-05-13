@@ -1,10 +1,10 @@
 import { client } from "@/lib/axios-client";
-import { CreateFunction, FunctionSchema, GetAllFunctions, UpdateFunction } from "@/types/function";
+import { FunctionSchema, GetAllFunctions, UpdateFunction } from "@/types/function";
 import { AxiosResponse } from "axios";
 
 const PREFIX = "functions";
 
-export async function createFunction<I, O>(data: CreateFunction<I, O>): Promise<FunctionSchema> {
+export async function createFunction(data: any): Promise<FunctionSchema> {
     const response: AxiosResponse<FunctionSchema> = await client.request({
         url: PREFIX,
         method: "POST",
