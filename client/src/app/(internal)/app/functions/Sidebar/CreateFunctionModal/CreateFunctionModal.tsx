@@ -1,76 +1,139 @@
 "use client";
 
-import { MqttDataSourceTemplate } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/MqttDataSourceTemplate";
-import { RedisDataSourceTemplate } from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/RedisDataSourceTemplate";
+import {
+    MqttDataSourceTemplate,
+    createMQTTDataSourceSchema,
+} from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/MqttDataSourceTemplate";
+import {
+    RedisDataSourceTemplate,
+    createRedisDataSourceSchema,
+} from "@/app/(internal)/app/functions/Sidebar/CreateFunctionModal/RedisDataSourceTemplate";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { Select } from "@/components/Select";
 import { Toast } from "@/components/Toast";
 import { getAllDataSources } from "@/repository/dataSourcesRepository";
+import { createFunction } from "@/repository/functionRepository";
 import { DataSourceSchema } from "@/types/dataSource";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
-import { PropsWithChildren, ReactNode, useRef, useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { BiError } from "react-icons/bi";
-import { MdSend } from "react-icons/md";
+import { FunctionSchema } from "@/types/function";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChangeEvent, PropsWithChildren, ReactNode, useRef, useState } from "react";
+import { MdClose, MdSend } from "react-icons/md";
+import shortID from "shortid";
 import { z } from "zod";
 
-import {
-    Group,
-    GroupTitle,
-    Footer,
-    ErrorMessage,
-    Form,
-    InputContainer,
-} from "./CreateFunctionModal.styles";
+import { Group, GroupTitle, Footer, Form, InputContainer } from "./CreateFunctionModal.styles";
 
 const FROM_SCRATCH_DEFAULT_CODE = "function main() {\n\t// Your code here\n}";
 
 const createFunctionSchema = z.object({
     name: z.string().min(5, { message: "Name needs to have at least 5 characters" }),
-    sourceCode: z
-        .string()
-        .min(1, { message: "Source code is required" })
-        .default(FROM_SCRATCH_DEFAULT_CODE),
-    methodToExecute: z
-        .string()
-        .min(1, { message: "Method to execute is required" })
-        .default("main"),
-    input_topic: z.string().nullable(),
-    output_topic: z.string().nullable(),
-    input_channel: z.string().nullable(),
-    output_channel: z.string().nullable(),
+    inputConnectorConfiguration: z.discriminatedUnion("type", [
+        z.object({ type: z.literal("Redis"), ...createRedisDataSourceSchema.shape }),
+        z.object({ type: z.literal("MQTT"), ...createMQTTDataSourceSchema.shape }),
+    ]),
+    outputConnectorConfiguration: z.discriminatedUnion("type", [
+        z.object({ type: z.literal("Redis"), ...createRedisDataSourceSchema.shape }),
+        z.object({ type: z.literal("MQTT"), ...createMQTTDataSourceSchema.shape }),
+    ]),
 });
 
 export type CreateFunctionSchema = z.infer<typeof createFunctionSchema>;
 
 const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm<CreateFunctionSchema>({
-        resolver: zodResolver(createFunctionSchema),
+    const toastErrorRef = useRef<ToastRefType>();
+    const toastSuccessRef = useRef<ToastRefType>();
+    const queryClient = useQueryClient();
+
+    const [inputDataSourceType, setInputDataSourceType] = useState<"MQTT" | "REDIS" | null>(null);
+    const [outputDataSourceType, setOutputDataSourceType] = useState<"MQTT" | "REDIS" | null>(null);
+    const [inputDataSource, setInputDataSource] = useState<DataSourceSchema | null>(null);
+    const [outputDataSource, setOutputDataSource] = useState<DataSourceSchema | null>(null);
+    const [errorMessages, setErrorMessages] = useState<Array<{
+        code: string;
+        message: string;
+    }> | null>(null);
+    const [formData, setFormData] = useState({
+        name: "",
+        inputConnectorConfiguration: {},
+        outputConnectorConfiguration: {},
     });
-    const toastRef = useRef<ToastRefType>();
+    const [closeButton, setCloseButton] = useState<boolean>(false);
 
     const { data: dataSources, isPending } = useQuery({
         queryKey: ["getAllDataSources"],
         queryFn: async () => getAllDataSources(),
     });
 
-    const dataSourceTypes = dataSources?.dataSources?.map((ds: DataSourceSchema) => ds.type);
-    const [inputDatasource, setInputDatasource] = useState<DataSourceSchema | null>(null);
-    const [outputDatasource, setOutputDatasource] = useState<DataSourceSchema | null>(null);
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        const { name, value } = e.target;
+        setFormData(prevData => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
 
-    const onHandleSubmit: SubmitHandler<CreateFunctionSchema> = async data => {
+    const { mutateAsync: createFunctionFn } = useMutation({
+        mutationFn: createFunction,
+        onSuccess(_, variables) {
+            queryClient.setQueryData(
+                ["functions"],
+                (data: { functions: Array<FunctionSchema> }) => {
+                    const currentFunctions = data.functions ?? [];
+
+                    const newFunctions = [
+                        ...currentFunctions,
+                        {
+                            id: shortID.generate(),
+                            status: "ERROR",
+                            ...variables,
+                        },
+                    ];
+
+                    return { functions: newFunctions };
+                }
+            );
+        },
+    });
+
+    const onHandleSubmit = async (e: SubmitEvent): Promise<void> => {
+        e.preventDefault();
+
         try {
-            console.log("here", data);
-        } catch (err) {
-            toastRef.current?.publish();
+            const parsedData: CreateFunctionSchema = createFunctionSchema.parse(formData);
+            // @ts-ignore
+            delete parsedData.inputConnectorConfiguration.type;
+            // @ts-ignore
+            delete parsedData.outputConnectorConfiguration.type;
+
+            const payload = {
+                ...parsedData,
+                sourceCode: FROM_SCRATCH_DEFAULT_CODE,
+                methodToExecute: "main",
+                inputConnectorDataSourceId: inputDataSource?.id,
+                outputConnectorDataSourceId: outputDataSource?.id,
+            };
+
+            await createFunctionFn({ ...payload });
+
+            toastSuccessRef.current?.publish();
+            setCloseButton(true);
+        } catch (err: any) {
+            setErrorMessages(err.errors);
+            toastErrorRef.current?.publish();
         }
+    };
+
+    const resetStates = (): void => {
+        setErrorMessages(null);
+        setFormData({
+            name: "",
+            inputConnectorConfiguration: {},
+            outputConnectorConfiguration: {},
+        });
+        setInputDataSourceType(null);
+        setOutputDataSourceType(null);
     };
 
     return (
@@ -80,22 +143,23 @@ const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
                 <Modal.Content.Header closeButton>Create function</Modal.Content.Header>
                 <Modal.Content.Body>
                     {/* @ts-ignore */}
-                    <Form onSubmit={handleSubmit(onHandleSubmit)}>
+                    <Form onSubmit={onHandleSubmit}>
                         <InputContainer>
                             <Input>
                                 <Input.Label fieldId="create-function-name">Name</Input.Label>
                                 <Input.Field
                                     $tag="input"
                                     id="create-function-name"
-                                    {...register("name", { required: true })}
+                                    name="name"
+                                    onChange={handleInputChange}
                                 />
                             </Input>
-                            {errors.name && errors.name.message && (
-                                <ErrorMessage>
-                                    <BiError size={13} />
-                                    {errors.name.message}
-                                </ErrorMessage>
-                            )}
+                            {/* {errors.name && errors.name.message && ( */}
+                            {/*    <ErrorMessage> */}
+                            {/*        <BiError size={13} /> */}
+                            {/*        {errors.name.message} */}
+                            {/*    </ErrorMessage> */}
+                            {/* )} */}
                         </InputContainer>
 
                         <Group>
@@ -108,61 +172,29 @@ const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
 
                                 {!isPending && (
                                     <Select
-                                        value={JSON.stringify(inputDatasource)}
                                         onValueChange={value => {
-                                            const parsedDatasource = JSON.parse(`${value}`);
-                                            setInputDatasource(parsedDatasource);
+                                            const dataSource: DataSourceSchema = JSON.parse(value);
+                                            const dataSourceType = dataSource.type;
+
+                                            setInputDataSource(dataSource);
+                                            setInputDataSourceType(dataSourceType);
                                         }}
                                     >
-                                        {dataSources?.dataSources ? (
-                                            dataSourceTypes?.map(type => (
-                                                <Select.Group label={type}>
-                                                    {dataSources.dataSources.map(
-                                                        // eslint-disable-next-line array-callback-return,consistent-return
-                                                        (ds: DataSourceSchema) => {
-                                                            if (ds.type === type) {
-                                                                return (
-                                                                    <Select.Item
-                                                                        value={JSON.stringify(ds)}
-                                                                    >
-                                                                        {ds.name}
-                                                                    </Select.Item>
-                                                                );
-                                                            }
-                                                        }
-                                                    )}
-                                                </Select.Group>
-                                            ))
-                                        ) : (
-                                            <Select.Item value="invalid">
-                                                Register a datasource first
+                                        {dataSources?.dataSources?.map((ds: DataSourceSchema) => (
+                                            <Select.Item value={JSON.stringify(ds)}>
+                                                {ds.name}
                                             </Select.Item>
-                                        )}
+                                        ))}
                                     </Select>
                                 )}
-
-                                {/* {errors.inputConnectorID && errors.inputConnectorID.message && ( */}
-                                {/*    <ErrorMessage> */}
-                                {/*        <BiError size={13} /> */}
-                                {/*        {errors.inputConnectorID.message} */}
-                                {/*    </ErrorMessage> */}
-                                {/* )} */}
                             </Input>
 
-                            {inputDatasource?.type === "REDIS" && (
-                                <RedisDataSourceTemplate
-                                    register={register}
-                                    type="input"
-                                    dataSource={inputDatasource}
-                                />
+                            {inputDataSourceType === "REDIS" && (
+                                <RedisDataSourceTemplate type="input" setFormData={setFormData} />
                             )}
 
-                            {inputDatasource?.type === "MQTT" && (
-                                <MqttDataSourceTemplate
-                                    register={register}
-                                    type="input"
-                                    dataSource={inputDatasource}
-                                />
+                            {inputDataSourceType === "MQTT" && (
+                                <MqttDataSourceTemplate type="input" setFormData={setFormData} />
                             )}
 
                             <hr style={{ width: "20%" }} />
@@ -174,81 +206,78 @@ const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
 
                                 {!isPending && (
                                     <Select
-                                        value={JSON.stringify(outputDatasource)}
                                         onValueChange={value => {
-                                            const parsedDatasource = JSON.parse(`${value}`);
-                                            setOutputDatasource(parsedDatasource);
+                                            const dataSource: DataSourceSchema = JSON.parse(value);
+                                            const dataSourceType = dataSource.type;
+
+                                            setOutputDataSource(dataSource);
+                                            setOutputDataSourceType(dataSourceType);
                                         }}
                                     >
-                                        {dataSources?.dataSources ? (
-                                            dataSourceTypes?.map(type => (
-                                                <Select.Group label={type}>
-                                                    {dataSources.dataSources.map(
-                                                        // eslint-disable-next-line array-callback-return,consistent-return
-                                                        (ds: DataSourceSchema) => {
-                                                            if (ds.type === type) {
-                                                                return (
-                                                                    <Select.Item
-                                                                        value={JSON.stringify(ds)}
-                                                                    >
-                                                                        {ds.name}
-                                                                    </Select.Item>
-                                                                );
-                                                            }
-                                                        }
-                                                    )}
-                                                </Select.Group>
-                                            ))
-                                        ) : (
-                                            <Select.Item value="invalid">
-                                                Register a datasource first
+                                        {dataSources?.dataSources?.map((ds: DataSourceSchema) => (
+                                            <Select.Item value={JSON.stringify(ds)}>
+                                                {ds.name}
                                             </Select.Item>
-                                        )}
+                                        ))}
                                     </Select>
                                 )}
-
-                                {/* {errors.outputConnectorID && errors.outputConnectorID.message && ( */}
-                                {/*    <ErrorMessage> */}
-                                {/*        <BiError size={13} /> */}
-                                {/*        {errors.outputConnectorID.message} */}
-                                {/*    </ErrorMessage> */}
-                                {/* )} */}
                             </Input>
 
-                            {outputDatasource?.type === "REDIS" && (
-                                <RedisDataSourceTemplate
-                                    register={register}
-                                    type="output"
-                                    dataSource={outputDatasource}
-                                />
+                            {outputDataSourceType === "REDIS" && (
+                                <RedisDataSourceTemplate type="output" setFormData={setFormData} />
                             )}
 
-                            {outputDatasource?.type === "MQTT" && (
-                                <MqttDataSourceTemplate
-                                    register={register}
-                                    type="output"
-                                    dataSource={outputDatasource}
-                                />
+                            {outputDataSourceType === "MQTT" && (
+                                <MqttDataSourceTemplate type="output" setFormData={setFormData} />
                             )}
                         </Group>
 
                         <Footer>
-                            <Button type="submit">
-                                <MdSend size={16} />
-                                Create
-                            </Button>
-                            <Modal.Content.Body.Cancel>
-                                <Button $variant="secondary">Cancel</Button>
-                            </Modal.Content.Body.Cancel>
+                            {!closeButton ? (
+                                <>
+                                    <Button type="submit">
+                                        <MdSend size={16} />
+                                        Create
+                                    </Button>
+                                    <Modal.Content.Body.Cancel>
+                                        <Button $variant="secondary" onClick={resetStates}>
+                                            Cancel
+                                        </Button>
+                                    </Modal.Content.Body.Cancel>
+                                </>
+                            ) : (
+                                <Modal.Content.Body.Action>
+                                    <Button onClick={resetStates}>
+                                        <MdClose size={16} />
+                                        Close modal
+                                    </Button>
+                                </Modal.Content.Body.Action>
+                            )}
                         </Footer>
                     </Form>
 
                     <Toast>
-                        <Toast.Content ref={toastRef} variant="error">
+                        <Toast.Content ref={toastErrorRef} variant="error">
                             <Toast.Title>An unexpected error occurred</Toast.Title>
                             <Toast.Description>
-                                Check your environment logs to understand the problem
+                                {errorMessages?.map(
+                                    (item: { code: string; message: string }, index) => {
+                                        if (item.code !== "invalid_union_discriminator") {
+                                            return (
+                                                <span key={index} style={{ display: "block" }}>
+                                                    - {item.message}
+                                                </span>
+                                            );
+                                        }
+                                    }
+                                )}
                             </Toast.Description>
+                        </Toast.Content>
+                    </Toast>
+
+                    <Toast>
+                        <Toast.Content ref={toastSuccessRef} variant="success">
+                            <Toast.Title>Function created successfully</Toast.Title>
                         </Toast.Content>
                     </Toast>
                 </Modal.Content.Body>

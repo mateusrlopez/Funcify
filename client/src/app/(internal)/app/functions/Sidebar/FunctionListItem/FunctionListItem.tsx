@@ -7,6 +7,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { ReactNode, useCallback, useState } from "react";
 import { FaRegFileCode } from "react-icons/fa6";
 import { MdFileOpen, MdOutlineOpenInNew, MdEdit, MdDelete } from "react-icons/md";
+import { validate as isValidUUID } from "uuid";
 
 import { DeleteFunctionModal } from "../DeleteFunctionModal";
 import { EditFunctionModal } from "../EditFunctionModal";
@@ -24,6 +25,7 @@ const FunctionListItem = (props: FunctionSchema): ReactNode => {
     const searchParams = useSearchParams();
 
     const selectedFunctionID = searchParams.get("fid");
+    const canBeDeleted = isValidUUID(props.id);
     const [deleteModal, setDeleteModal] = useState(false);
     const [editModal, setEditModal] = useState(false);
 
@@ -61,7 +63,7 @@ const FunctionListItem = (props: FunctionSchema): ReactNode => {
                     <MdEdit size={16} />
                     Edit
                 </ContextMenu.Item>
-                <ContextMenu.Item onClick={() => setDeleteModal(true)}>
+                <ContextMenu.Item onClick={() => setDeleteModal(true)} disabled={!canBeDeleted}>
                     <MdDelete size={16} />
                     Delete
                 </ContextMenu.Item>

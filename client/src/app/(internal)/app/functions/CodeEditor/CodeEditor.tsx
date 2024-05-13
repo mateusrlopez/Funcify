@@ -3,8 +3,11 @@
 import { FunctionsContext } from "@/app/_context/functions";
 import { THEMES } from "@/app/(internal)/app/functions/CodeEditor/THEMES";
 import { Dropdown } from "@/components/Dropdown";
+import { getFunctionById } from "@/repository/functionRepository";
 import { javascript } from "@codemirror/lang-javascript";
+import { useQuery } from "@tanstack/react-query";
 import CodeMirror from "@uiw/react-codemirror";
+import { useSearchParams } from "next/navigation";
 import { ReactNode, useContext, useState } from "react";
 import { IoMdSettings } from "react-icons/io";
 import { MdCheck, MdFormatColorFill, MdOutlineKeyboardTab } from "react-icons/md";
@@ -13,6 +16,8 @@ import { Root, Toolbar, LastUpdate, Settings } from "./CodeEditor.styles";
 
 const CodeEditor = (): ReactNode => {
     const functionsCtx = useContext(FunctionsContext);
+    const searchParams = useSearchParams();
+    const fid = searchParams.get("fid");
 
     const [editorConfig, setEditorConfig] = useState({
         lineNumber: true,
@@ -24,10 +29,16 @@ const CodeEditor = (): ReactNode => {
 
     const themes: string[] = Object.values(THEMES).map(theme => theme.name);
 
+    const { data, error, isPending } = useQuery({
+        queryKey: ["function"],
+        queryFn: async () => getFunctionById(fid as string),
+    });
+
     return (
         <Root>
             <Toolbar>
                 <LastUpdate>
+                    {console.log(data)}
                     <strong>Last Update:</strong> January 16, 2024 08:09 PM
                 </LastUpdate>
 
@@ -134,7 +145,7 @@ const CodeEditor = (): ReactNode => {
             </Toolbar>
 
             <CodeMirror
-                value={""}
+                value={data?.sourceCode}
                 width="100%"
                 height="calc(100vh - 142px)"
                 style={{ flexGrow: 1 }}

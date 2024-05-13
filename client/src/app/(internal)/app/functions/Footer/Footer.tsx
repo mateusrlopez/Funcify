@@ -6,14 +6,18 @@ import { Toast } from "@/components/Toast";
 import { updateFunction } from "@/repository/functionRepository";
 import { FunctionSchema } from "@/types/function";
 import { useMutation } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { ReactNode, useContext, useRef } from "react";
-import { FaGithub, FaUndo, FaSave } from "react-icons/fa";
-import { IoMdHelpCircleOutline, IoIosWarning } from "react-icons/io";
+import { FaGithub, FaSave } from "react-icons/fa";
+import { IoMdHelpCircleOutline } from "react-icons/io";
 import { MdOutlineReport } from "react-icons/md";
 
 import { Root, Actions, ProjectInfo, Column, Text, StyledLink } from "./Footer.styles";
 
 const Footer = (): ReactNode => {
+    const searchParams = useSearchParams();
+    const fid = searchParams.get("fid");
+
     const toastSuccessRef = useRef<ToastRefType>();
     const toastErrorRef = useRef<ToastRefType>();
 
@@ -44,22 +48,29 @@ const Footer = (): ReactNode => {
 
     return (
         <Root>
-            <Actions>
-                <Text $fontSize="default" $fontWeight="bold" $color="lighterRed">
-                    <IoIosWarning size={16} />
-                    Unsaved changes...
-                </Text>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <Button $variant="tertiary">
-                        <FaUndo size={14} />
-                        Rollback
-                    </Button>
-                    <Button onClick={handleSubmit}>
-                        <FaSave size={14} />
-                        Push
-                    </Button>
-                </div>
-            </Actions>
+            {fid ? (
+                <>
+                    <Actions>
+                        {/* <Text $fontSize="default" $fontWeight="bold" $color="lighterRed"> */}
+                        {/*    <IoIosWarning size={16} /> */}
+                        {/*    Unsaved changes... */}
+                        {/* </Text> */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            {/* <Button $variant="tertiary"> */}
+                            {/*    <FaUndo size={14} /> */}
+                            {/*    Rollback */}
+                            {/* </Button> */}
+                            <Button onClick={handleSubmit}>
+                                <FaSave size={14} />
+                                Push
+                            </Button>
+                        </div>
+                    </Actions>
+                </>
+            ) : (
+                <div style={{ flexGrow: 1 }} />
+            )}
+
             <ProjectInfo>
                 <Column>
                     <Text $fontSize="sm" $fontWeight="bold" $color="gray10">

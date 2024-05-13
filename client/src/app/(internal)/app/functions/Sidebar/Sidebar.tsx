@@ -30,7 +30,7 @@ const Sidebar = (): ReactNode => {
     const search = searchParams.get("search");
 
     const { data, error, isPending } = useQuery({
-        queryKey: ["getAllFunctions"],
+        queryKey: ["functions"],
         queryFn: async () => getAllFunctions(),
     });
 
