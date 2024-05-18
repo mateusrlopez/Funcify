@@ -6,6 +6,7 @@ import { DataSourceSchema, MqttConfiguration, RedisConfiguration } from "@/types
 import { ReactNode, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { TbDots } from "react-icons/tb";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { validate as isValidUUID } from "uuid";
 
 import { Root, Name, Text, Actions } from "./Item.styles";
