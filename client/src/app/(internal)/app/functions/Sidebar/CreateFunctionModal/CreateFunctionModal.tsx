@@ -261,6 +261,7 @@ const CreateFunctionModal = ({ children }: PropsWithChildren): ReactNode => {
                             <Toast.Title>An unexpected error occurred</Toast.Title>
                             <Toast.Description>
                                 {errorMessages?.map(
+                                    // eslint-disable-next-line array-callback-return,consistent-return
                                     (item: { code: string; message: string }, index) => {
                                         if (item.code !== "invalid_union_discriminator") {
                                             return (

@@ -29,7 +29,7 @@ const CodeEditor = (): ReactNode => {
 
     const themes: string[] = Object.values(THEMES).map(theme => theme.name);
 
-    const { data, error, isPending } = useQuery({
+    const { data } = useQuery({
         queryKey: ["function"],
         queryFn: async () => getFunctionById(fid as string),
     });
@@ -38,7 +38,6 @@ const CodeEditor = (): ReactNode => {
         <Root>
             <Toolbar>
                 <LastUpdate>
-                    {console.log(data)}
                     <strong>Last Update:</strong> January 16, 2024 08:09 PM
                 </LastUpdate>
 

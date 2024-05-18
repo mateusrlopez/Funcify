@@ -7,6 +7,7 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { ReactNode, useCallback, useState } from "react";
 import { FaRegFileCode } from "react-icons/fa6";
 import { MdFileOpen, MdOutlineOpenInNew, MdEdit, MdDelete } from "react-icons/md";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { validate as isValidUUID } from "uuid";
 
 import { DeleteFunctionModal } from "../DeleteFunctionModal";

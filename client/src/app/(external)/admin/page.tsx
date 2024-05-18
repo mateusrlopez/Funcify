@@ -1,20 +1,14 @@
-import { verifyIfSetupWasDone } from "@/repository/setupRepository";
 import { Metadata } from "next";
-
-import { Panel } from "./_components/Panel";
-import { Login } from "./_views/Login";
-import { Setup } from "./_views/Setup";
+import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
     title: "Admin",
 };
 
-export default async function Page() {
-    const { done: setupIsDone }: SetupIsDoneResponse = await verifyIfSetupWasDone();
+const Main = dynamic(() => import("./main"), {
+    ssr: false,
+});
 
-    await new Promise(resolve => {
-        setTimeout(resolve, 2000);
-    });
-
-    return <Panel>{setupIsDone ? <Login /> : <Setup />}</Panel>;
+export default function Page() {
+    return <Main />;
 }

@@ -7,6 +7,7 @@ import { UserSchema } from "@/types/user";
 import { ReactNode, useState } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { TbDots } from "react-icons/tb";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { validate as IsValidUUID } from "uuid";
 
 import { Root, Email, Text, Actions } from "./Item.styles";
